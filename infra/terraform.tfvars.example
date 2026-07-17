@@ -1,0 +1,7 @@
+# GCP Project Configurations
+project_id = "your-gcp-project-id"
+region     = "us-central1"
+
+# Service Configurations (Optional Override)
+service_name            = "travel-itinerary-planner"
+firestore_database_name = "(default)"
