@@ -1,0 +1,7 @@
+{
+  "home_airport": "",
+  "destinations": [],
+  "max_price": 500,
+  "departure_time_preference": "after 5pm Friday",
+  "return_time_preference": "Sunday afternoon"
+}
