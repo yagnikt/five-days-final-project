@@ -6,7 +6,7 @@ This agent solves the manual and time-intensive process of finding optimal weeke
 
 ## Key Features & Architecture
 - **Primary Generative Agent**: Built with Gemini 3.1 Pro via the ADK, utilizing the Google Search tool for real-time data grounding.
-- **LLM-as-a-Judge**: Built with Gemini 3.1 Flash to score the generated itineraries based on feasibility, quality, and user constraints, with loop control (`max_retries`) to manage costs.
+- **LLM-as-a-Judge**: Built with Gemini 3.5 Flash to score the generated itineraries based on feasibility, quality, and user constraints, with loop control (`max_retries`) to manage costs.
 - **Backend API**: A Python backend (using FastAPI) to orchestrate the agents and manage state.
 - **State Management & Database**: Google Cloud Firestore to store itinerary requests, pending approvals, and approved itineraries.
 - **Human-in-the-Loop (HITL) Dashboard**: A built-in web dashboard where administrators must approve itineraries before they are visible to the client.
