@@ -6,13 +6,14 @@ This agent solves the manual and time-intensive process of finding optimal weeke
 
 ## Key Features & Architecture
 - **Primary Generative Agent**: Built with Gemini 3.1 Pro via the ADK, utilizing the Google Search tool for real-time data grounding.
-- **LLM-as-a-Judge**: Built with Gemini 3.5 Flash to score the generated itineraries based on feasibility, quality, and user constraints, with loop control (`max_retries`) to manage costs.
-- **Backend API**: A Python backend (using FastAPI) to orchestrate the agents and manage state.
-- **State Management & Database**: Google Cloud Firestore to store itinerary requests, pending approvals, and approved itineraries.
+- **LLM-as-a-Judge & Evaluation**: Built with Gemini 3.5 Flash to score generated itineraries in real-time, plus **`agents-cli eval`** to run automated offline evaluations against test datasets (`.evalset.json`) to prevent quality regression.
+- **Backend API**: A Python backend (using FastAPI) to orchestrate the agents, handle real-time evaluator loops, and interact with Google Cloud services.
+- **State Management & Database**: Google Cloud Firestore to store operational records (itinerary requests, pending approvals, and approved itineraries).
+- **Persistent Context & Memory**: **Google Agent Memory Bank** manages short-term chat histories and long-term user preferences natively, eliminating session bloat in the database.
 - **Human-in-the-Loop (HITL) Dashboard**: A built-in web dashboard where administrators must approve itineraries before they are visible to the client.
 - **Security**: Vertex AI Safety Settings and backend input sanitization to protect against prompt injection.
-- **Infrastructure as Code (IaC)**: Terraform to deploy the API to Google Cloud Run and provision Firestore.
-- **Frontend UI**: Built with Vite and Vanilla HTML/JS/CSS, featuring async polling/WebSockets to gracefully handle latency during agent evaluation.
+- **Infrastructure & Deployment**: Managed via **Terraform** for stateful cloud databases (Firestore) and IAM service accounts, combined with **`agents-cli`** (`agents-cli deploy`) to package and deploy the containerized agent backend directly to Google Cloud Agent Runtime.
+- **Frontend UI**: Built with Vite and Vanilla HTML/JS/CSS, featuring async polling to gracefully handle latency during real-time agent evaluation.
 
 ---
 
@@ -24,8 +25,8 @@ The implementation plan has been established and broken down into phases. Task m
 
 ## Implementation Phases
 
-- [x] **Phase 1: Environment Setup & Infrastructure**: Terraform init, base project structure (`backend/` and `frontend/`), documentation, and `.env.example` configurations.
+- [x] **Phase 1: Environment Setup & Infrastructure**: Terraform init, base project structure (`backend/` and `frontend/`), `agents-cli-manifest.yaml` configuration, documentation, and `.env.example` configurations.
 - [x] **Phase 2: Core Agent Logic (Primary Agent)**: Implement Gemini Pro agent, integrate Google Search tool, and define edge case fallbacks for tool failures.
-- [ ] **Phase 3: Evaluation Layer (LLM-as-a-Judge) & Security**: Implement Gemini Flash judge, evaluation loop logic, and input security guardrails.
-- [ ] **Phase 4: State Management & HITL Gateway**: Build FastAPI endpoints and integrate Firestore state management for the evaluation loop.
-- [ ] **Phase 5: Frontend UI Development**: Build the user-facing Client View and Admin Dashboard, implementing latency UX handling.
+- [ ] **Phase 3: Evaluation Layer (LLM-as-a-Judge) & Security**: Implement Gemini Flash judge, real-time evaluation loop logic, input security guardrails, and offline testing sets using `agents-cli eval`.
+- [ ] **Phase 4: State Management & HITL Gateway**: Build FastAPI endpoints, integrate Firestore state management for the HITL approval flow, and configure the **Google Agent Memory Bank** session-state client.
+- [ ] **Phase 5: Frontend UI Development & Cloud Deployment**: Build the user-facing Client View and Admin Dashboard with latency-aware polling status updates, and deploy the agent backend using `agents-cli deploy`.

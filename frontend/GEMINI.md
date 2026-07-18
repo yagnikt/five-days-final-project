@@ -15,5 +15,12 @@ This is the frontend client and admin dashboard for the **AI-Driven Travel Itine
 4. **No Placeholders:** All functional views, loading skeletons, and interactive states must be fully fleshed out with dynamic demo content rather than generic placeholders.
 
 ## State Management & Polling
-1. **Asynchronous Polling:** Since travel agent planning (using live Search) can take up to 20-30 seconds, implement a elegant, state-driven polling mechanism or WebSocket connection.
-2. **Loading States:** Provide beautiful progress bar updates or custom text animations indicating what step the planner is currently on (e.g., "Researching flight options...", "Evaluating constraints...").
+1. **Asynchronous Polling:** Since travel agent planning (using live Search) can take up to 20-30 seconds, implement an elegant, state-driven polling mechanism or WebSocket connection tracking `/api/status`.
+2. **Loading States:** Provide beautiful progress indicators and custom text animations matching the standard backend real-time execution steps:
+   - `"Initializing Agent..."`: Starting the reasoning thread.
+   - `"Querying Google Search..."`: Sourcing real-world grounding data for flights, lodging, or attractions.
+   - `"Formulating Proposal..."`: Assembling the structured travel plan.
+   - `"Running Evaluator Check..."`: Scoring the proposal via the Gemini Flash LLM-as-a-judge quality gate.
+   - `"Refining Itinerary..."` (if evaluation score falls below threshold): Incorporating judge feedback.
+   - `"Awaiting Admin Review..."`: Successfully written to Firestore as pending.
+   - `"Approved!"` / `"Rejected"`: Based on HITL dashboard actions.
