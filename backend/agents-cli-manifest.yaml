@@ -3,3 +3,7 @@ agent_directory: .
 create_params:
   deployment_target: agent_runtime
   session_type: in_memory
+evaluation:
+  eval_sets:
+    - tests/evalsets/.evalset.json
+
