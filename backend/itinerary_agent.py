@@ -131,17 +131,10 @@ safety_settings = [
 # 4. Initialize the Google ADK Agent
 # ----------------------------------------------------------------------
 
-# Dynamically patch ToolConfig to support include_server_side_tool_invocations,
-# which is required when mixing built-in tools (Google Search) with 
-# structured outputs (which use function calling under the hood).
-types.ToolConfig.model_config['extra'] = 'allow'
-types.ToolConfig.model_rebuild(force=True)
-
 # We configure GenerateContentConfig for general options like safety settings
 content_config = types.GenerateContentConfig(
     safety_settings=safety_settings,
     temperature=0.2, # Low temperature for reliable structured JSON and minimal drift
-    tool_config={'include_server_side_tool_invocations': True}
 )
 
 async def init_itinerary_state(callback_context: CallbackContext) -> None:
