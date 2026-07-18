@@ -3,11 +3,11 @@
 To fully leverage the Google Agents CLI (`agents-cli`) and deploy to Vertex AI Agent Runtime natively, we must migrate the existing monolithic FastAPI orchestration (`main.py`) into the standard ADK directory structure. 
 
 ## Phase 6.1: Scaffold Enhancement & File Restructuring
-- `[ ]` Move into the `backend/` directory.
-- `[ ]` Run `agents-cli scaffold enhance . --deployment-target agent_runtime` to generate the ADK boilerplate (`app/fast_api_app.py`, `app/app_utils/`, `Dockerfile`, and `deployment/terraform/`).
-- `[ ]` Create the `backend/app/` directory if it wasn't fully populated.
-- `[ ]` Move the custom agents (`itinerary_agent.py`, `evaluator_agent.py`) and tools into the `backend/app/` directory.
-- `[ ]` Ensure `backend/app/__init__.py` properly defines the `App(name="app", root_agent=...)` instance.
+- [x] Move into the `backend/` directory.
+- [x] Run `agents-cli scaffold enhance . --deployment-target agent_runtime` to generate the ADK boilerplate (`app/fast_api_app.py`, `app/app_utils/`, `Dockerfile`, and `deployment/terraform/`).
+- [x] Create the `backend/app/` directory if it wasn't fully populated.
+- [x] Move the custom agents (`itinerary_agent.py`, `evaluator_agent.py`) and tools into the `backend/app/` directory.
+- [x] Ensure `backend/app/__init__.py` properly defines the `App(name="app", root_agent=...)` instance.
 
 ## Phase 6.2: Refactoring Core Agents to ADK Primitives
 - `[ ]` Refactor `itinerary_agent.py` to define an `Agent(name="itinerary_agent", model="gemini-flash-latest", ...)`.
