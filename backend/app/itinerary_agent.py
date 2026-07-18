@@ -72,6 +72,8 @@ class ItineraryProposal(BaseModel):
         description="If fallback_requested is True, provide a helpful and polite explanation describing what search criteria or budgets were too tight and recommend how the user can broaden their preferences (e.g., larger budget, different dates)."
     )
 
+from google.adk.agents.callback_context import CallbackContext
+
 # ----------------------------------------------------------------------
 # 2. Define System Prompt & Instructions
 # ----------------------------------------------------------------------
@@ -79,6 +81,8 @@ class ItineraryProposal(BaseModel):
 SYSTEM_INSTRUCTION = (
     "You are an expert, premium AI Travel Itinerary Planner. Your goal is to construct "
     "highly feasible, comprehensive, and engaging weekend getaway plans based on user preferences.\n\n"
+    
+    "{feedback_instruction}\n\n"
     
     "CRITICAL RULES & OPERATING PROCEDURES:\n"
     "1. REAL-WORLD DATA GROUNDING: You MUST run the google_search tool to find accurate, real, "
@@ -140,12 +144,28 @@ content_config = types.GenerateContentConfig(
     tool_config={'include_server_side_tool_invocations': True}
 )
 
+async def init_itinerary_state(callback_context: CallbackContext) -> None:
+    if "feedback_instruction" not in callback_context.state:
+        callback_context.state["feedback_instruction"] = ""
+    # Extract user_query from the first user event if not set
+    if "user_query" not in callback_context.state:
+        for event in callback_context.events:
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        callback_context.state["user_query"] = part.text
+                        break
+            if "user_query" in callback_context.state:
+                break
+
 itinerary_agent = Agent(
     name="itinerary_agent",
     model="gemini-flash-latest", # Efficient flash model for planning
     instruction=SYSTEM_INSTRUCTION,
     tools=[google_search],
     output_schema=ItineraryProposal,
+    output_key="itinerary_proposal",
+    before_agent_callback=init_itinerary_state,
     generate_content_config=content_config,
 )
 

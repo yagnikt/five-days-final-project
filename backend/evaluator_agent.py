@@ -1,8 +1,10 @@
 import os
+import json
 from pydantic import BaseModel, Field
 from google.genai import types
 from google.genai.types import SafetySetting, HarmCategory, HarmBlockThreshold
 from google.adk.agents import Agent
+from google.adk.agents.callback_context import CallbackContext
 
 # ----------------------------------------------------------------------
 # 1. Define structured output schema for the evaluator
@@ -53,7 +55,11 @@ EVALUATOR_INSTRUCTION = (
     "SCORING RULES:\n"
     "- To calculate `score`, take the average of feasibility, quality, and constraint adherence.\n"
     "- Set `passed` to True if and only if `score` is 0.8 or higher.\n"
-    "- If `passed` is False, `feedback` must be highly specific, describing exactly which parts are missing, inconsistent, or over budget, so the primary agent knows exactly how to refine the itinerary in the next turn."
+    "- If `passed` is False, `feedback` must be highly specific, describing exactly which parts are missing, inconsistent, or over budget, so the primary agent knows exactly how to refine the itinerary in the next turn.\n\n"
+    
+    "Evaluate the following itinerary proposal:\n"
+    "User Preferences / Query: {user_query}\n\n"
+    "Generated Itinerary Proposal (JSON):\n{itinerary_proposal_json}\n"
 )
 
 # ----------------------------------------------------------------------
@@ -88,10 +94,30 @@ content_config = types.GenerateContentConfig(
 # 4. Initialize the Evaluator Agent
 # ----------------------------------------------------------------------
 
+async def prepare_eval_state(callback_context: CallbackContext) -> None:
+    # Default user_query if not already present
+    if "user_query" not in callback_context.state:
+        query = ""
+        for event in callback_context.events:
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        query = part.text
+                        break
+            if query:
+                break
+        callback_context.state["user_query"] = query
+    
+    # Serialize the latest itinerary_proposal dictionary to JSON string
+    proposal = callback_context.state.get("itinerary_proposal", {})
+    callback_context.state["itinerary_proposal_json"] = json.dumps(proposal, indent=2)
+
 evaluator_agent = Agent(
     name="evaluator_agent",
     model="gemini-3.5-flash", # Highly efficient flash model suited for fast evaluations and structured outputs
     instruction=EVALUATOR_INSTRUCTION,
     output_schema=EvaluationResult,
+    output_key="evaluation_result",
+    before_agent_callback=prepare_eval_state,
     generate_content_config=content_config,
 )

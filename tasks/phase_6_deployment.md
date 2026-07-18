@@ -16,8 +16,8 @@ To fully leverage the Google Agents CLI (`agents-cli`) and deploy to Vertex AI A
 - [x] Configure structured output using Pydantic via the `output_schema` parameter to enforce the evaluation schema (pass/fail grading).
 
 ## Phase 6.3: Orchestration Migration (ADK Workflow)
-- [ ] In `backend/app/agent.py`, create a `LoopAgent` or `SequentialAgent` to manage the interaction between the `itinerary_agent` and the `evaluator_agent`.
-- [ ] If using a `LoopAgent` for the generate-evaluate-refine loop, implement an `EscalationChecker` (a custom `BaseAgent` or callback) to break the loop when the evaluator returns a "pass" grade.
+- [x] In `backend/app/agent.py`, create a `LoopAgent` or `SequentialAgent` to manage the interaction between the `itinerary_agent` and the `evaluator_agent`.
+- [x] If using a `LoopAgent` for the generate-evaluate-refine loop, implement an `EscalationChecker` (a custom `BaseAgent` or callback) to break the loop when the evaluator returns a "pass" grade.
 
 ## Phase 6.4: Migrating HITL & Custom REST APIs
 - `[ ]` Extract `/api/request`, `/api/status`, `/api/pending`, `/api/approve`, and `/api/reject` from the old `main.py`.
