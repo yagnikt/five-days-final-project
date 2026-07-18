@@ -1,4 +1,5 @@
 import os
+import json
 from typing import List, Optional
 from pydantic import BaseModel, Field, AliasChoices
 from google.genai import types
@@ -101,7 +102,48 @@ SYSTEM_INSTRUCTION = (
     "     response, specify `fallback_message` explaining exactly why (e.g., 'We couldn't find any flights "
     "     matching your $50 budget from New York to Tokyo. Please increase your budget or choose a closer destination.'), "
     "     and leave the flights, accommodation, and daily activities empty or minimal.\n"
-    "5. STRICT STRUCTURED OUTPUT: All outputs must strictly conform to the ItineraryProposal JSON structure."
+    "5. STRICT STRUCTURED OUTPUT: You MUST output ONLY a single, valid JSON block matching this exact schema:\n"
+    "{\n"
+    "  \"destination\": \"string (name of city)\",\n"
+    "  \"summary\": \"string (brief and engaging summary)\",\n"
+    "  \"total_estimated_cost\": number,\n"
+    "  \"flights\": [\n"
+    "    {\n"
+    "      \"flight_number\": \"string\",\n"
+    "      \"airline\": \"string\",\n"
+    "      \"departure_time\": \"string (ISO format or descriptive)\",\n"
+    "      \"arrival_time\": \"string (ISO format or descriptive)\",\n"
+    "      \"departure_airport\": \"string\",\n"
+    "      \"arrival_airport\": \"string\",\n"
+    "      \"price\": number\n"
+    "    }\n"
+    "  ],\n"
+    "  \"accommodation\": {\n"
+    "    \"name\": \"string\",\n"
+    "    \"address\": \"string or null\",\n"
+    "    \"price_per_night\": number or null,\n"
+    "    \"rating\": number or null,\n"
+    "    \"booking_link\": \"string or null\"\n"
+    "  } or null,\n"
+    "  \"itinerary_days\": [\n"
+    "    {\n"
+    "      \"day_number\": number,\n"
+    "      \"date\": \"string\",\n"
+    "      \"activities\": [\n"
+    "        {\n"
+    "          \"time\": \"string\",\n"
+    "          \"title\": \"string\",\n"
+    "          \"description\": \"string\",\n"
+    "          \"location\": \"string\",\n"
+    "          \"cost\": number\n"
+    "        }\n"
+    "      ]\n"
+    "    }\n"
+    "  ],\n"
+    "  \"fallback_requested\": boolean,\n"
+    "  \"fallback_message\": \"string or null\"\n"
+    "}\n"
+    "Do NOT include any extra text, introduction, or conversation around the JSON block. Ensure the JSON is completely valid."
 )
 
 # ----------------------------------------------------------------------
@@ -151,14 +193,45 @@ async def init_itinerary_state(callback_context: CallbackContext) -> None:
             if "user_query" in callback_context.state:
                 break
 
+async def parse_itinerary_proposal(callback_context: CallbackContext) -> None:
+    # Find the last agent response event
+    proposal_text = ""
+    for event in reversed(callback_context.session.events):
+        if event.author == callback_context.agent_name and event.content:
+            if event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        proposal_text += part.text
+            if proposal_text:
+                break
+    
+    proposal_text = proposal_text.strip()
+    if proposal_text.startswith("```json"):
+        proposal_text = proposal_text[7:]
+    if proposal_text.endswith("```"):
+        proposal_text = proposal_text[:-3]
+    proposal_text = proposal_text.strip()
+    
+    try:
+        itinerary_dict = json.loads(proposal_text)
+        callback_context.state["itinerary_proposal"] = itinerary_dict
+    except json.JSONDecodeError:
+        # Construct fallback dictionary if parsing failed
+        callback_context.state["itinerary_proposal"] = {
+            "destination": "Unknown",
+            "summary": "Failed to parse itinerary proposal.",
+            "total_estimated_cost": 0.0,
+            "fallback_requested": True,
+            "fallback_message": "The system encountered an error parsing the generated itinerary. Please try again with broadened preferences."
+        }
+
 itinerary_agent = Agent(
     name="itinerary_agent",
     model="gemini-flash-latest", # Efficient flash model for planning
     instruction=SYSTEM_INSTRUCTION,
     tools=[google_search],
-    output_schema=ItineraryProposal,
-    output_key="itinerary_proposal",
     before_agent_callback=init_itinerary_state,
+    after_agent_callback=parse_itinerary_proposal,
     generate_content_config=content_config,
 )
 
