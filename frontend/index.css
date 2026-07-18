@@ -238,6 +238,463 @@ textarea:focus {
   font-size: 0.9rem;
 }
 
+/* Navigation Buttons override */
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-family-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+.nav-btn:hover,
+.nav-btn.active {
+  color: var(--text-primary);
+  background: rgba(99, 102, 241, 0.15);
+}
+
+/* Progress Steps Styling */
+.progress-section {
+  max-width: 700px;
+  margin: 0 auto 2rem auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+.progress-card {
+  padding: 2rem;
+}
+.progress-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 10;
+}
+.step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(15, 17, 26, 0.8);
+  border: 2px solid var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.step.active .step-icon {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  transform: scale(1.1);
+}
+.step.completed .step-icon {
+  border-color: var(--color-secondary);
+  background: rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+}
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.step.active .step-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.step.completed .step-label {
+  color: var(--color-secondary);
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--text-muted);
+  margin: 0 -15px;
+  transform: translateY(-13px);
+  transition: all 0.3s ease;
+}
+.step-line.completed {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+.progress-status-text {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Terminal logs and Badger */
+.terminal-section {
+  max-width: 700px;
+  margin: 0 auto 3rem auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+.terminal-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+.terminal-header {
+  background: rgba(15, 17, 26, 0.8);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--bg-card-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.pulse-indicator {
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--color-accent);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+.terminal-badge {
+  background: rgba(244, 63, 94, 0.15);
+  color: var(--color-accent);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.terminal-badge.success {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--color-secondary);
+}
+.terminal-body {
+  background: #05070f;
+  padding: 1.5rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #a5b4fc;
+}
+.terminal-log-line {
+  word-break: break-all;
+}
+
+/* Itinerary render styles */
+.itinerary-section {
+  max-width: 800px;
+  margin: 0 auto 5rem auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+.itinerary-card {
+  padding: 3rem;
+}
+.itinerary-header {
+  border-bottom: 1px solid var(--bg-card-border);
+  padding-bottom: 2rem;
+  margin-bottom: 2.5rem;
+}
+.itinerary-header h2 {
+  font-family: var(--font-family-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+.itinerary-summary {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+.itinerary-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.meta-tag {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.meta-tag strong {
+  color: var(--color-secondary);
+}
+.section-title {
+  font-family: var(--font-family-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1rem 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--bg-card-border);
+  padding-bottom: 0.5rem;
+}
+.flight-card, .hotel-card {
+  background: rgba(15, 17, 26, 0.4);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.flight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+.flight-leg {
+  border-left: 2px solid var(--color-primary);
+  padding-left: 1rem;
+}
+.flight-num {
+  font-family: 'Fira Code', monospace;
+  font-weight: 600;
+  color: var(--color-secondary);
+  font-size: 1.1rem;
+}
+.hotel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+.hotel-rating {
+  color: #fbbf24;
+  font-weight: 600;
+}
+.booking-btn {
+  display: inline-flex;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  align-items: center;
+  gap: 0.25rem;
+  transition: background 0.2s;
+  width: auto;
+}
+.booking-btn:hover {
+  background: var(--color-primary-hover);
+}
+.day-card {
+  background: rgba(15, 17, 26, 0.3);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+.day-title {
+  font-family: var(--font-family-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--color-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.5rem;
+}
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+}
+.activity-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.activity-item {
+  position: relative;
+  padding-left: 2rem;
+}
+.activity-dot {
+  position: absolute;
+  left: 1px;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  box-shadow: 0 0 8px var(--color-secondary);
+  border: 3px solid var(--bg-dark);
+}
+.activity-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  margin-bottom: 0.25rem;
+}
+.activity-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+.activity-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.activity-loc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+/* Admin Dashboard Specific Styles */
+.admin-card {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  width: auto;
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bg-card-border);
+  color: var(--text-primary);
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 1rem;
+  font-size: 1.1rem;
+}
+.proposal-card {
+  background: rgba(15, 17, 26, 0.5);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+.proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+.proposal-prompt {
+  font-style: italic;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.scores-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.score-widget {
+  background: rgba(15, 17, 26, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.score-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-family: var(--font-family-display);
+  margin-top: 0.25rem;
+}
+.score-passed {
+  color: var(--color-secondary);
+}
+.score-failed {
+  color: var(--color-accent);
+}
+.eval-feedback {
+  background: rgba(99, 102, 241, 0.05);
+  border-left: 3px solid var(--color-primary);
+  padding: 1rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.proposal-actions {
+  display: flex;
+  gap: 1rem;
+}
+.btn-success {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #0891b2 100%);
+  color: white;
+}
+.btn-success:hover {
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+}
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-accent) 0%, #be123c 100%);
+  color: white;
+}
+.btn-danger:hover {
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+}
+.hidden {
+  display: none !important;
+}
+.view-pane {
+  display: none;
+}
+.view-pane.active {
+  display: block;
+}
+
 /* Responsive adjustment */
 @media (max-width: 768px) {
   .hero-title {

@@ -9,7 +9,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   
   <!-- Style -->
   <link rel="stylesheet" href="/index.css">
@@ -23,34 +23,120 @@
         <span class="logo-text">AeroPlan <span class="logo-accent">AI</span></span>
       </div>
       <nav class="nav-links">
-        <a href="#planner" class="active">Planner</a>
-        <a href="#admin" id="nav-admin">Admin Dashboard</a>
+        <button id="nav-btn-planner" class="nav-btn active">Planner</button>
+        <button id="nav-btn-admin" class="nav-btn">Admin Dashboard</button>
       </nav>
     </header>
 
     <!-- Main Container -->
     <main class="main-content">
-      <section class="hero-section">
-        <h1 class="hero-title">Your Next Weekend, <br><span class="gradient-text">Intelligently Planned.</span></h1>
-        <p class="hero-subtitle">Describe your dream weekend getaway. Our AI agent instantly researches real-time flights, schedules, and hotels to build your flawless itinerary.</p>
-      </section>
+      <!-- Client Planner View -->
+      <div id="view-planner" class="view-pane active">
+        <section class="hero-section">
+          <h1 class="hero-title">Your Next Weekend, <br><span class="gradient-text">Intelligently Planned.</span></h1>
+          <p class="hero-subtitle">Describe your dream weekend getaway. Our AI agent instantly researches real-time flights, schedules, and hotels to build your flawless itinerary.</p>
+        </section>
 
-      <!-- Search / Input Section -->
-      <section class="planner-section" id="planner">
-        <div class="card glass-card">
-          <div class="card-header">
-            <h2>Plan Your Getaway</h2>
-            <p>Define your constraints, dates, and desires in natural language.</p>
-          </div>
-          <form id="itinerary-form" class="planner-form">
-            <div class="form-group">
-              <label for="prompt">Where would you like to go and what do you like to do?</label>
-              <textarea id="prompt" placeholder="e.g. A culinary weekend in New Orleans. Budget is $800, flying from Chicago. Must include jazz music on Saturday night." required></textarea>
+        <!-- Search / Input Section -->
+        <section class="planner-section" id="planner">
+          <div class="card glass-card">
+            <div class="card-header">
+              <h2>Plan Your Getaway</h2>
+              <p>Define your constraints, dates, and desires in natural language.</p>
             </div>
-            <button type="submit" class="btn btn-primary">Generate Itinerary</button>
-          </form>
-        </div>
-      </section>
+            <form id="itinerary-form" class="planner-form">
+              <div class="form-group">
+                <label for="prompt">Where would you like to go and what do you like to do?</label>
+                <textarea id="prompt" placeholder="e.g. A culinary weekend in New Orleans. Budget is $800, flying from Chicago. Must include jazz music on Saturday night." required>Weekend trip from Chicago to Seattle next month. Budget is $700. I want to include coffee tasting and a great spot for skyline views on Saturday night.</textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" id="btn-submit-request">Generate Itinerary</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- Progress Steps Tracker (hidden initially) -->
+        <section id="progress-section" class="progress-section hidden">
+          <div class="card glass-card progress-card">
+            <div class="progress-steps">
+              <div class="step" id="step-init">
+                <div class="step-icon">🤖</div>
+                <div class="step-label">Initializing</div>
+              </div>
+              <div class="step-line"></div>
+              <div class="step" id="step-search">
+                <div class="step-icon">🔍</div>
+                <div class="step-label">Searching Web</div>
+              </div>
+              <div class="step-line"></div>
+              <div class="step" id="step-eval">
+                <div class="step-icon">⚖️</div>
+                <div class="step-label">Evaluating QA</div>
+              </div>
+              <div class="step-line"></div>
+              <div class="step" id="step-review">
+                <div class="step-icon">👤</div>
+                <div class="step-label">Admin Review</div>
+              </div>
+            </div>
+            <div class="progress-status-text" id="progress-status-text">
+              Initializing agent environment...
+            </div>
+          </div>
+        </section>
+
+        <!-- Execution / Real-time Logs Terminal (hidden initially) -->
+        <section id="terminal-section" class="terminal-section hidden">
+          <div class="card glass-card terminal-card">
+            <div class="card-header terminal-header">
+              <div class="terminal-title">
+                <span class="pulse-indicator"></span>
+                <span>Agent Execution Stream</span>
+              </div>
+              <span id="terminal-status" class="terminal-badge">processing</span>
+            </div>
+            <div class="terminal-body" id="terminal-logs">
+              <!-- Logs get printed here dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Final Itinerary Render Section (hidden initially) -->
+        <section id="itinerary-output-section" class="itinerary-section hidden">
+          <div class="card glass-card itinerary-card">
+            <div class="itinerary-header">
+              <h2 id="itinerary-dest">Seattle, Washington</h2>
+              <p id="itinerary-summary">A spectacular weekend escape custom tailored for coffee exploration and scenic skyline vistas.</p>
+              <div class="itinerary-meta">
+                <span class="meta-tag">Estimated Cost: <strong id="itinerary-cost">$0.00</strong></span>
+              </div>
+            </div>
+            
+            <div id="itinerary-details-container">
+              <!-- Flight, accommodation, and days render here dynamically -->
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Administrator HITL Dashboard View -->
+      <div id="view-admin" class="view-pane">
+        <section class="hero-section mini-hero">
+          <h1 class="hero-title mini-title"><span class="gradient-text">HITL Administrator Dashboard</span></h1>
+          <p class="hero-subtitle">Authorize, modify, and review LLM-as-a-judge quality metrics before final client presentation.</p>
+        </section>
+
+        <section class="admin-section">
+          <div class="card glass-card admin-card">
+            <div class="card-header admin-card-header">
+              <h2>Pending Approvals Queue</h2>
+              <button class="btn btn-secondary btn-sm" id="btn-refresh-pending">🔄 Refresh Queue</button>
+            </div>
+            <div class="admin-queue" id="admin-queue-list">
+              <p class="empty-state">No pending proposals awaiting verification.</p>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
 
     <!-- Footer -->

@@ -70,6 +70,16 @@ async def run_orchestration_background(request_id: str, query: str, user_id: str
 
 # API Routes
 
+@app.get("/")
+def read_root():
+    """Friendly root endpoint directing users to the frontend application."""
+    return {
+        "message": "AeroPlan AI Travel Itinerary Planner API is running!",
+        "health_check_endpoint": "/health",
+        "frontend_app_url": "http://localhost:5173"
+    }
+
+
 @app.get("/health", status_code=status.HTTP_200_OK)
 def health_check():
     """Verify backend API and database connection status."""
