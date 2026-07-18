@@ -1,6 +1,6 @@
 import os
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AliasChoices
 from google.genai import types
 from google.genai.types import SafetySetting, HarmCategory, HarmBlockThreshold
 from google.adk.agents import Agent
@@ -22,9 +22,20 @@ class FlightDetails(BaseModel):
 
 class HotelDetails(BaseModel):
     """Detailed information for hotel accommodations."""
-    name: str = Field(description="Name of the hotel or accommodation.")
-    address: str = Field(description="Physical address of the hotel.")
-    price_per_night: float = Field(description="Estimated price per night in USD.")
+    name: str = Field(
+        validation_alias=AliasChoices('name', 'hotel_name'),
+        description="Name of the hotel or accommodation."
+    )
+    address: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices('address', 'location'),
+        description="Physical address or location of the hotel. If full street address is not found, specify the neighborhood or region."
+    )
+    price_per_night: Optional[float] = Field(
+        default=0.0,
+        validation_alias=AliasChoices('price_per_night', 'cost_per_night'),
+        description="Estimated price per night in USD."
+    )
     rating: Optional[float] = Field(default=None, description="Average guest rating of the hotel (e.g., 4.5).")
     booking_link: Optional[str] = Field(default=None, description="A direct booking or reference link, if found.")
 
