@@ -30,4 +30,4 @@ The implementation plan has been established and broken down into phases. Task m
 - [x] **Phase 3: Evaluation Layer (LLM-as-a-Judge) & Security**: Implement Gemini Flash judge, real-time evaluation loop logic, input security guardrails, and offline testing sets using `agents-cli eval`.
 - [x] **Phase 4: State Management & HITL Gateway**: Build FastAPI endpoints, integrate Firestore state management for the HITL approval flow, and configure the **Google Agent Memory Bank** session-state client.
 - [x] **Phase 5: Frontend UI Development**: Build the user-facing Client View and Admin Dashboard with latency-aware polling status updates.
-- [ ] **Phase 6: Cloud Deployment via Vertex AI Agent Engine**: Create `agents-cli-manifest.yaml`, configure the environment, and deploy the agent backend using `agents-cli deploy`.
+- [ ] **Phase 6: Cloud Deployment via Vertex AI Agent Engine**: @[tasks/phase_6_deployment.md]
