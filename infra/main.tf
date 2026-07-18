@@ -31,7 +31,7 @@ resource "google_firestore_database" "database" {
   project     = var.project_id
   name        = var.firestore_database_name
   location_id = var.region
-  type        = "FIRESTORE_STANDARD"
+  type        = "FIRESTORE_NATIVE"
 
   # Wait for API activation before creating
   depends_on = [google_project_service.apis]
@@ -104,4 +104,19 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   name     = google_cloud_run_v2_service.backend.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# IAM Role Bindings for Local User
+resource "google_project_iam_member" "user_firestore" {
+  project    = var.project_id
+  role       = "roles/datastore.user"
+  member     = "user:${var.admin_user_email}"
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_project_iam_member" "user_vertex" {
+  project    = var.project_id
+  role       = "roles/aiplatform.user"
+  member     = "user:${var.admin_user_email}"
+  depends_on = [google_project_service.apis]
 }

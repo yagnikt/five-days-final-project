@@ -20,3 +20,8 @@ variable "firestore_database_name" {
   type        = string
   default     = "(default)"
 }
+
+variable "admin_user_email" {
+  description = "The email of the administrator to receive IAM bindings locally"
+  type        = string
+}
