@@ -98,7 +98,7 @@ async def prepare_eval_state(callback_context: CallbackContext) -> None:
     # Default user_query if not already present
     if "user_query" not in callback_context.state:
         query = ""
-        for event in callback_context.events:
+        for event in callback_context.session.events:
             if event.content and event.content.parts:
                 for part in event.content.parts:
                     if part.text:

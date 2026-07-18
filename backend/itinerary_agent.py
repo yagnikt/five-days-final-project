@@ -149,7 +149,7 @@ async def init_itinerary_state(callback_context: CallbackContext) -> None:
         callback_context.state["feedback_instruction"] = ""
     # Extract user_query from the first user event if not set
     if "user_query" not in callback_context.state:
-        for event in callback_context.events:
+        for event in callback_context.session.events:
             if event.content and event.content.parts:
                 for part in event.content.parts:
                     if part.text:
