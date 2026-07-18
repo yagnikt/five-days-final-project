@@ -1,5 +1,5 @@
 name: travel-itinerary-planner
-agent_directory: .
+agent_directory: app
 create_params:
   deployment_target: agent_runtime
   session_type: in_memory
