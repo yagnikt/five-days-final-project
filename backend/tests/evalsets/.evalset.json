@@ -1,0 +1,63 @@
+{
+  "eval_set_id": "baseline_travel_evals",
+  "name": "Baseline Travel Itinerary Evaluation Set",
+  "eval_cases": [
+    {
+      "eval_id": "nyc_to_dc_standard",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Weekend getaway from NYC to Washington DC next month, budget $600, museum tours and nice restaurants"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "agents",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "sf_to_boston_premium",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "3-day weekend trip from San Francisco to Boston, budget $1500, historic walks and seafood spots"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "agents",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "impossible_budget_fallback",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Fly from Los Angeles to Paris, France for a weekend, budget $100, luxury hotels only"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "agents",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}
