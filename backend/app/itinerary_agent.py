@@ -140,11 +140,14 @@ content_config = types.GenerateContentConfig(
     tool_config={'include_server_side_tool_invocations': True}
 )
 
-travel_agent = Agent(
-    name="primary_travel_agent",
-    model="gemini-3.1-pro-preview", # Premium model for high-reasoning and web grounding
+itinerary_agent = Agent(
+    name="itinerary_agent",
+    model="gemini-flash-latest", # Efficient flash model for planning
     instruction=SYSTEM_INSTRUCTION,
     tools=[google_search],
     output_schema=ItineraryProposal,
     generate_content_config=content_config,
 )
+
+# Alias for backwards compatibility
+travel_agent = itinerary_agent

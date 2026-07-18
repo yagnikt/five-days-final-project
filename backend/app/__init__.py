@@ -1,7 +1,7 @@
 from google.adk.apps import App
-from .itinerary_agent import travel_agent
+from .itinerary_agent import itinerary_agent
 
-root_agent = travel_agent
+root_agent = itinerary_agent
 
 app = App(
     name="app",

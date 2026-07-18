@@ -10,14 +10,14 @@ To fully leverage the Google Agents CLI (`agents-cli`) and deploy to Vertex AI A
 - [x] Ensure `backend/app/__init__.py` properly defines the `App(name="app", root_agent=...)` instance.
 
 ## Phase 6.2: Refactoring Core Agents to ADK Primitives
-- `[ ]` Refactor `itinerary_agent.py` to define an `Agent(name="itinerary_agent", model="gemini-flash-latest", ...)`.
-- `[ ]` Migrate any tools (like Google Search) to use ADK's `FunctionTool` or built-in tools.
-- `[ ]` Refactor `evaluator_agent.py` to define an `Agent(name="evaluator_agent", ...)`.
-- `[ ]` Configure structured output using Pydantic via the `output_schema` parameter to enforce the evaluation schema (pass/fail grading).
+- [x] Refactor `itinerary_agent.py` to define an `Agent(name="itinerary_agent", model="gemini-flash-latest", ...)`.
+- [x] Migrate any tools (like Google Search) to use ADK's `FunctionTool` or built-in tools.
+- [x] Refactor `evaluator_agent.py` to define an `Agent(name="evaluator_agent", ...)`.
+- [x] Configure structured output using Pydantic via the `output_schema` parameter to enforce the evaluation schema (pass/fail grading).
 
 ## Phase 6.3: Orchestration Migration (ADK Workflow)
-- `[ ]` In `backend/app/agent.py`, create a `LoopAgent` or `SequentialAgent` to manage the interaction between the `itinerary_agent` and the `evaluator_agent`.
-- `[ ]` If using a `LoopAgent` for the generate-evaluate-refine loop, implement an `EscalationChecker` (a custom `BaseAgent` or callback) to break the loop when the evaluator returns a "pass" grade.
+- [ ] In `backend/app/agent.py`, create a `LoopAgent` or `SequentialAgent` to manage the interaction between the `itinerary_agent` and the `evaluator_agent`.
+- [ ] If using a `LoopAgent` for the generate-evaluate-refine loop, implement an `EscalationChecker` (a custom `BaseAgent` or callback) to break the loop when the evaluator returns a "pass" grade.
 
 ## Phase 6.4: Migrating HITL & Custom REST APIs
 - `[ ]` Extract `/api/request`, `/api/status`, `/api/pending`, `/api/approve`, and `/api/reject` from the old `main.py`.
