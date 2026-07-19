@@ -26,11 +26,11 @@ To fully leverage the Google Agents CLI (`agents-cli`) and deploy to Vertex AI A
 - [x] Re-wire the background orchestration trigger to use the new ADK `Runner` instead of the old custom orchestrator.
 
 ## Phase 6.5: Infrastructure, Terraform, & Configuration Updates
-- `[ ]` Modify the generated `backend/deployment/terraform/single-project/iam.tf`.
-- `[ ]` Add IAM bindings granting `roles/datastore.user` (or `roles/firebase.admin`) to the agent's runtime service account (`app_sa`) so it can read/write to Firestore.
-- `[ ]` Ensure `agents-cli deploy` is passed the correct environment variables (e.g., `GCP_PROJECT`, `FIREBASE_CREDENTIALS` if not using default auth).
-- `[ ]` If utilizing Secret Manager, grant `roles/secretmanager.secretAccessor` to the `app_sa` in Terraform.
-- `[ ]` Ensure `backend/agents-cli-manifest.yaml` reflects the new layout (`agent_directory: app`).
+- [x] Modify the generated `backend/deployment/terraform/single-project/iam.tf` (completed dynamically via updating default roles in `variables.tf`).
+- [x] Add IAM bindings granting `roles/datastore.user` (or `roles/firebase.admin`) to the agent's runtime service account (`app_sa`) so it can read/write to Firestore.
+- [x] Ensure `agents-cli deploy` is passed the correct environment variables (e.g., `GCP_PROJECT`, `FIREBASE_CREDENTIALS` if not using default auth).
+- [x] If utilizing Secret Manager, grant `roles/secretmanager.secretAccessor` to the `app_sa` in Terraform (not utilized in current design, marked complete).
+- [x] Ensure `backend/agents-cli-manifest.yaml` reflects the new layout (`agent_directory: app`).
 
 ## Phase 6.6: Validation, Testing, and Deployment
 - `[ ]` Start the server using `uvicorn app.fast_api_app:app --reload` or test via `agents-cli run`.
