@@ -9,8 +9,9 @@ load_dotenv()
 
 # Verify that credentials are in place before running
 api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    print("ERROR: GEMINI_API_KEY environment variable not found in .env.")
+use_vertex = os.getenv("GOOGLE_GENAI_USE_VERTEXAI") == "true"
+if not api_key and not use_vertex:
+    print("ERROR: Neither GEMINI_API_KEY nor GOOGLE_GENAI_USE_VERTEXAI=true found in .env.")
     sys.exit(1)
 
 from orchestrator import orchestrate_itinerary_generation

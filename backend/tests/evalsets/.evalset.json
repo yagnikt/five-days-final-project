@@ -3,7 +3,16 @@
   "name": "Baseline Travel Itinerary Evaluation Set",
   "eval_cases": [
     {
+      "eval_case_id": "nyc_to_dc_standard",
       "eval_id": "nyc_to_dc_standard",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Weekend getaway from NYC to Washington DC next month, budget $600, museum tours and nice restaurants"
+          }
+        ]
+      },
       "conversation": [
         {
           "user_content": {
@@ -22,7 +31,16 @@
       }
     },
     {
+      "eval_case_id": "sf_to_boston_premium",
       "eval_id": "sf_to_boston_premium",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "3-day weekend trip from San Francisco to Boston, budget $1500, historic walks and seafood spots"
+          }
+        ]
+      },
       "conversation": [
         {
           "user_content": {
@@ -41,7 +59,16 @@
       }
     },
     {
+      "eval_case_id": "impossible_budget_fallback",
       "eval_id": "impossible_budget_fallback",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Fly from Los Angeles to Paris, France for a weekend, budget $100, luxury hotels only"
+          }
+        ]
+      },
       "conversation": [
         {
           "user_content": {

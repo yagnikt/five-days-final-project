@@ -41,7 +41,7 @@ root_agent = LoopAgent(
     max_iterations=3,
 )
 
-app = App(
+backend = App(
     name="app",
     root_agent=root_agent,
 )

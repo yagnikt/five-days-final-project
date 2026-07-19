@@ -33,7 +33,7 @@ To fully leverage the Google Agents CLI (`agents-cli`) and deploy to Vertex AI A
 - [x] Ensure `backend/agents-cli-manifest.yaml` reflects the new layout (`agent_directory: app`).
 
 ## Phase 6.6: Validation, Testing, and Deployment
-- `[ ]` Start the server using `uvicorn app.fast_api_app:app --reload` or test via `agents-cli run`.
-- `[ ]` Verify the frontend UI still successfully communicates with the HITL endpoints and Firestore.
-- `[ ]` Run `agents-cli eval generate` and `agents-cli eval grade` against the existing `.evalset.json` to ensure agent quality hasn't regressed during the refactor.
-- `[ ]` Execute `agents-cli deploy` from the `backend/` directory to push the container to Vertex AI Agent Runtime.
+- [x] Start the server using `uvicorn app.fast_api_app:app --reload` or test via `agents-cli run`.
+- [x] Verify the frontend UI still successfully communicates with the HITL endpoints and Firestore.
+- [x] Run `agents-cli eval generate` and `agents-cli eval grade` against the existing `.evalset.json` to ensure agent quality hasn't regressed during the refactor.
+- [x] Execute `agents-cli deploy` from the `backend/` directory to push the container to Vertex AI Agent Runtime.

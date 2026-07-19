@@ -1,0 +1,350 @@
+{
+  "eval_cases": [
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Weekend getaway from NYC to Washington DC next month, budget $600, museum tours and nice restaurants"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "{\n  \"score\": 1.0,\n  \"feasibility_rating\": 1.0,\n  \"quality_rating\": 1.0,\n  \"constraint_adherence\": 1.0,\n  \"feedback\": \"Excellent itinerary! The choice of Amtrak instead of flights is highly realistic and cost-effective for an NYC to DC weekend trip. The budget is perfectly managed at $565, leaving a small buffer. The museum selections are iconic, and the inclusion of Old Ebbitt Grill perfectly satisfies the 'nice restaurants' preference. Chronology and timing are flawless.\",\n  \"passed\": true\n}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "nyc_to_dc_standard",
+      "agent_data": {
+        "agents": {
+          "itinerary_refinement_loop": {
+            "agent_id": "itinerary_refinement_loop",
+            "agent_type": "LoopAgent",
+            "description": "",
+            "tools": [],
+            "sub_agents": [
+              "itinerary_agent",
+              "evaluator_agent",
+              "escalation_checker"
+            ]
+          },
+          "itinerary_agent": {
+            "agent_id": "itinerary_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert, premium AI Travel Itinerary Planner. Your goal is to construct highly feasible, comprehensive, and engaging weekend getaway plans based on user preferences.\n\n{feedback_instruction}\n\nCRITICAL RULES & OPERATING PROCEDURES:\n1. REAL-WORLD DATA GROUNDING: You MUST run the google_search tool to find accurate, real, and up-to-date options for flights, events, hotels, and timings. Do not invent flight numbers, hotel names, prices, or activity availability.\n2. DATE FEASIBILITY: Ensure the flight schedules, lodging, and activities align. For a typical weekend getaway, focus on a Friday evening to Sunday afternoon/evening schedule.\n3. COST ACCURACY: Give realistic prices and keep the total cost within the user's requested budget. Sum the prices of flights, accommodations (multiplied by the number of nights), and activity ticket costs to calculate 'total_estimated_cost'.\n4. NO HALLUCINATION / FALLBACK HANDLING:\n   - If your google_search queries return no results, or if the user's budget and constraints are      completely unrealistic (e.g., $10 flights, flying halfway around the world in 1 hour, etc.),      you MUST NOT hallucinate fake prices or flights.\n   - Instead, you must trigger the fallback path: set `fallback_requested` to `True` in your structured      response, specify `fallback_message` explaining exactly why (e.g., 'We couldn't find any flights      matching your $50 budget from New York to Tokyo. Please increase your budget or choose a closer destination.'),      and leave the flights, accommodation, and daily activities empty or minimal.\n5. STRICT STRUCTURED OUTPUT: You MUST output ONLY a single, valid JSON block matching this exact schema:\n{\n  \"destination\": \"string (name of city)\",\n  \"summary\": \"string (brief and engaging summary)\",\n  \"total_estimated_cost\": number,\n  \"flights\": [\n    {\n      \"flight_number\": \"string\",\n      \"airline\": \"string\",\n      \"departure_time\": \"string (ISO format or descriptive)\",\n      \"arrival_time\": \"string (ISO format or descriptive)\",\n      \"departure_airport\": \"string\",\n      \"arrival_airport\": \"string\",\n      \"price\": number\n    }\n  ],\n  \"accommodation\": {\n    \"name\": \"string\",\n    \"address\": \"string or null\",\n    \"price_per_night\": number or null,\n    \"rating\": number or null,\n    \"booking_link\": \"string or null\"\n  } or null,\n  \"itinerary_days\": [\n    {\n      \"day_number\": number,\n      \"date\": \"string\",\n      \"activities\": [\n        {\n          \"time\": \"string\",\n          \"title\": \"string\",\n          \"description\": \"string\",\n          \"location\": \"string\",\n          \"cost\": number\n        }\n      ]\n    }\n  ],\n  \"fallback_requested\": boolean,\n  \"fallback_message\": \"string or null\"\n}\nDo NOT include any extra text, introduction, or conversation around the JSON block. Ensure the JSON is completely valid.",
+            "tools": [],
+            "sub_agents": []
+          },
+          "evaluator_agent": {
+            "agent_id": "evaluator_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert quality assurance travel agent acting as an LLM-as-a-Judge.\nYour job is to objectively evaluate the travel itinerary proposals generated by our primary travel agent.\n\nCRITICAL EVALUATION CRITERIA:\n1. FEASIBILITY (0.0 to 1.0):\n   - Do the dates and times connect logically? (e.g., cannot check in to a hotel before the inbound flight lands, cannot have activities before arriving at the destination).\n   - Are the travel schedules physically realistic?\n2. QUALITY (0.0 to 1.0):\n   - Is the summary engaging and premium?\n   - Are the day-by-day activities detailed with times, titles, locations, and descriptions?\n   - Ensure there are no placeholder texts, hallucinations, or ungrounded details.\n3. CONSTRAINT ADHERENCE (0.0 to 1.0):\n   - Does the total estimated cost stay within the user's budget?\n   - Were specific request preferences (e.g., museums, seafood, historic walks) incorporated?\n   - Note: If the primary agent requests a fallback (fallback_requested is True), but provides a highly helpful explanation of why the constraints were impossible and gives recommendations, award a score of 1.0 as the fallback pathway is valid and accurate.\n\nSCORING RULES:\n- To calculate `score`, take the average of feasibility, quality, and constraint adherence.\n- Set `passed` to True if and only if `score` is 0.8 or higher.\n- If `passed` is False, `feedback` must be highly specific, describing exactly which parts are missing, inconsistent, or over budget, so the primary agent knows exactly how to refine the itinerary in the next turn.\n\nEvaluate the following itinerary proposal:\nUser Preferences / Query: {user_query}\n\nGenerated Itinerary Proposal (JSON):\n{itinerary_proposal_json}\n",
+            "tools": [],
+            "sub_agents": []
+          },
+          "escalation_checker": {
+            "agent_id": "escalation_checker",
+            "agent_type": "EscalationChecker",
+            "description": "",
+            "tools": [],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "itinerary_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "```json\n{\n  \"destination\": \"Washington, D.C.\",\n  \"summary\": \"A culture-rich weekend getaway to the nation's capital, focusing on world-class, free Smithsonian museums and dining at classic D.C. establishments, all within a comfortable budget.\",\n  \"total_estimated_cost\": 565,\n  \"flights\": [\n    {\n      \"flight_number\": \"Northeast Regional 175 (Train)\",\n      \"airline\": \"Amtrak\",\n      \"departure_time\": \"2026-08-14T17:00:00\",\n      \"arrival_time\": \"2026-08-14T20:30:00\",\n      \"departure_airport\": \"NYP (Moynihan Train Hall)\",\n      \"arrival_airport\": \"WAS (Union Station)\",\n      \"price\": 85\n    },\n    {\n      \"flight_number\": \"Northeast Regional 190 (Train)\",\n      \"airline\": \"Amtrak\",\n      \"departure_time\": \"2026-08-16T17:30:00\",\n      \"arrival_time\": \"2026-08-16T21:00:00\",\n      \"departure_airport\": \"WAS (Union Station)\",\n      \"arrival_airport\": \"NYP (Moynihan Train Hall)\",\n      \"price\": 85\n    }\n  ],\n  \"accommodation\": {\n    \"name\": \"Hamilton Hotel Washington DC\",\n    \"address\": \"1001 14th St NW, Washington, DC 20005\",\n    \"price_per_night\": 130,\n    \"rating\": 8.8,\n    \"booking_link\": \"Search for Hamilton Hotel Washington DC August 14-16 2026\"\n  },\n  \"itinerary_days\": [\n    {\n      \"day_number\": 1,\n      \"date\": \"Friday, August 14, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"5:00 PM\",\n          \"title\": \"Depart NYC via Amtrak\",\n          \"description\": \"Take the Amtrak Northeast Regional train from Moynihan Train Hall (NYP) to Washington Union Station (WAS).\",\n          \"location\": \"NYP to WAS\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"8:30 PM\",\n          \"title\": \"Arrive and Check-in\",\n          \"description\": \"Arrive at Union Station, take a short taxi or Metro ride to the hotel, and check in.\",\n          \"location\": \"Hamilton Hotel Washington DC\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"9:30 PM\",\n          \"title\": \"Casual Dinner near Hotel\",\n          \"description\": \"Enjoy a late, casual dinner in the Downtown/Penn Quarter area near the hotel.\",\n          \"location\": \"Downtown DC Restaurant\",\n          \"cost\": 30\n        }\n      ]\n    },\n    {\n      \"day_number\": 2,\n      \"date\": \"Saturday, August 15, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"9:00 AM\",\n          \"title\": \"National Museum of Natural History\",\n          \"description\": \"Start the day with a visit to the Smithsonian National Museum of Natural History to see the Hope Diamond and the dinosaur exhibits. Admission is free.\",\n          \"location\": \"National Mall\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"12:30 PM\",\n          \"title\": \"Lunch near the Mall\",\n          \"description\": \"Grab a quick and satisfying lunch at a cafe or food truck near the National Mall.\",\n          \"location\": \"National Mall Area\",\n          \"cost\": 20\n        },\n        {\n          \"time\": \"2:00 PM\",\n          \"title\": \"National Museum of African American History and Culture (NMAAHC)\",\n          \"description\": \"Visit the NMAAHC. *Note: Free timed-entry passes are highly recommended and should be secured in advance.*\",\n          \"location\": \"National Mall\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"5:30 PM\",\n          \"title\": \"Return to Hotel and Refresh\",\n          \"description\": \"Take a break at the hotel to relax and prepare for a nice dinner out.\",\n          \"location\": \"Hamilton Hotel Washington DC\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"7:30 PM\",\n          \"title\": \"Nice Dinner at Old Ebbitt Grill\",\n          \"description\": \"Dine at the historic Old Ebbitt Grill, Washington's oldest saloon, known for its classic American fare and oyster bar. (Reservation recommended).\",\n          \"location\": \"Old Ebbitt Grill\",\n          \"cost\": 65\n        }\n      ]\n    },\n    {\n      \"day_number\": 3,\n      \"date\": \"Sunday, August 16, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"9:30 AM\",\n          \"title\": \"National Archives Museum\",\n          \"description\": \"Visit the National Archives to see the Declaration of Independence, the Constitution, and the Bill of Rights. Admission is free.\",\n          \"location\": \"National Archives Museum\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"12:00 PM\",\n          \"title\": \"Check-out and Lunch\",\n          \"description\": \"Check out of the hotel and have a final lunch near Union Station before heading to the train.\",\n          \"location\": \"Union Station Area\",\n          \"cost\": 20\n        },\n        {\n          \"time\": \"2:00 PM\",\n          \"title\": \"Explore Union Station\",\n          \"description\": \"Spend some time exploring the architecture and shops of the historic Union Station.\",\n          \"location\": \"Union Station\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"5:30 PM\",\n          \"title\": \"Depart DC via Amtrak\",\n          \"description\": \"Board the Amtrak Northeast Regional train back to New York City.\",\n          \"location\": \"WAS (Union Station) to NYP\",\n          \"cost\": 0\n        }\n      ]\n    }\n  ],\n  \"fallback_requested\": false,\n  \"fallback_message\": null\n}\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "evaluator_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "{\n  \"score\": 1.0,\n  \"feasibility_rating\": 1.0,\n  \"quality_rating\": 1.0,\n  \"constraint_adherence\": 1.0,\n  \"feedback\": \"Excellent itinerary! The choice of Amtrak instead of flights is highly realistic and cost-effective for an NYC to DC weekend trip. The budget is perfectly managed at $565, leaving a small buffer. The museum selections are iconic, and the inclusion of Old Ebbitt Grill perfectly satisfies the 'nice restaurants' preference. Chronology and timing are flawless.\",\n  \"passed\": true\n}"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "eval_id": "nyc_to_dc_standard",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Weekend getaway from NYC to Washington DC next month, budget $600, museum tours and nice restaurants"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "agents",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "3-day weekend trip from San Francisco to Boston, budget $1500, historic walks and seafood spots"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "{\n  \"score\": 1.0,\n  \"feasibility_rating\": 1.0,\n  \"quality_rating\": 1.0,\n  \"constraint_adherence\": 1.0,\n  \"feedback\": \"Excellent work! The chronological error on Day 1 has been resolved, and both flights are now correctly detailed in the flights array. The total estimated cost of $1397 is perfectly calculated and remains within the $1500 budget while fully satisfying the user's preferences for historic walks and seafood.\",\n  \"passed\": true\n}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "sf_to_boston_premium",
+      "agent_data": {
+        "agents": {
+          "itinerary_refinement_loop": {
+            "agent_id": "itinerary_refinement_loop",
+            "agent_type": "LoopAgent",
+            "description": "",
+            "tools": [],
+            "sub_agents": [
+              "itinerary_agent",
+              "evaluator_agent",
+              "escalation_checker"
+            ]
+          },
+          "itinerary_agent": {
+            "agent_id": "itinerary_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert, premium AI Travel Itinerary Planner. Your goal is to construct highly feasible, comprehensive, and engaging weekend getaway plans based on user preferences.\n\n{feedback_instruction}\n\nCRITICAL RULES & OPERATING PROCEDURES:\n1. REAL-WORLD DATA GROUNDING: You MUST run the google_search tool to find accurate, real, and up-to-date options for flights, events, hotels, and timings. Do not invent flight numbers, hotel names, prices, or activity availability.\n2. DATE FEASIBILITY: Ensure the flight schedules, lodging, and activities align. For a typical weekend getaway, focus on a Friday evening to Sunday afternoon/evening schedule.\n3. COST ACCURACY: Give realistic prices and keep the total cost within the user's requested budget. Sum the prices of flights, accommodations (multiplied by the number of nights), and activity ticket costs to calculate 'total_estimated_cost'.\n4. NO HALLUCINATION / FALLBACK HANDLING:\n   - If your google_search queries return no results, or if the user's budget and constraints are      completely unrealistic (e.g., $10 flights, flying halfway around the world in 1 hour, etc.),      you MUST NOT hallucinate fake prices or flights.\n   - Instead, you must trigger the fallback path: set `fallback_requested` to `True` in your structured      response, specify `fallback_message` explaining exactly why (e.g., 'We couldn't find any flights      matching your $50 budget from New York to Tokyo. Please increase your budget or choose a closer destination.'),      and leave the flights, accommodation, and daily activities empty or minimal.\n5. STRICT STRUCTURED OUTPUT: You MUST output ONLY a single, valid JSON block matching this exact schema:\n{\n  \"destination\": \"string (name of city)\",\n  \"summary\": \"string (brief and engaging summary)\",\n  \"total_estimated_cost\": number,\n  \"flights\": [\n    {\n      \"flight_number\": \"string\",\n      \"airline\": \"string\",\n      \"departure_time\": \"string (ISO format or descriptive)\",\n      \"arrival_time\": \"string (ISO format or descriptive)\",\n      \"departure_airport\": \"string\",\n      \"arrival_airport\": \"string\",\n      \"price\": number\n    }\n  ],\n  \"accommodation\": {\n    \"name\": \"string\",\n    \"address\": \"string or null\",\n    \"price_per_night\": number or null,\n    \"rating\": number or null,\n    \"booking_link\": \"string or null\"\n  } or null,\n  \"itinerary_days\": [\n    {\n      \"day_number\": number,\n      \"date\": \"string\",\n      \"activities\": [\n        {\n          \"time\": \"string\",\n          \"title\": \"string\",\n          \"description\": \"string\",\n          \"location\": \"string\",\n          \"cost\": number\n        }\n      ]\n    }\n  ],\n  \"fallback_requested\": boolean,\n  \"fallback_message\": \"string or null\"\n}\nDo NOT include any extra text, introduction, or conversation around the JSON block. Ensure the JSON is completely valid.",
+            "tools": [],
+            "sub_agents": []
+          },
+          "evaluator_agent": {
+            "agent_id": "evaluator_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert quality assurance travel agent acting as an LLM-as-a-Judge.\nYour job is to objectively evaluate the travel itinerary proposals generated by our primary travel agent.\n\nCRITICAL EVALUATION CRITERIA:\n1. FEASIBILITY (0.0 to 1.0):\n   - Do the dates and times connect logically? (e.g., cannot check in to a hotel before the inbound flight lands, cannot have activities before arriving at the destination).\n   - Are the travel schedules physically realistic?\n2. QUALITY (0.0 to 1.0):\n   - Is the summary engaging and premium?\n   - Are the day-by-day activities detailed with times, titles, locations, and descriptions?\n   - Ensure there are no placeholder texts, hallucinations, or ungrounded details.\n3. CONSTRAINT ADHERENCE (0.0 to 1.0):\n   - Does the total estimated cost stay within the user's budget?\n   - Were specific request preferences (e.g., museums, seafood, historic walks) incorporated?\n   - Note: If the primary agent requests a fallback (fallback_requested is True), but provides a highly helpful explanation of why the constraints were impossible and gives recommendations, award a score of 1.0 as the fallback pathway is valid and accurate.\n\nSCORING RULES:\n- To calculate `score`, take the average of feasibility, quality, and constraint adherence.\n- Set `passed` to True if and only if `score` is 0.8 or higher.\n- If `passed` is False, `feedback` must be highly specific, describing exactly which parts are missing, inconsistent, or over budget, so the primary agent knows exactly how to refine the itinerary in the next turn.\n\nEvaluate the following itinerary proposal:\nUser Preferences / Query: {user_query}\n\nGenerated Itinerary Proposal (JSON):\n{itinerary_proposal_json}\n",
+            "tools": [],
+            "sub_agents": []
+          },
+          "escalation_checker": {
+            "agent_id": "escalation_checker",
+            "agent_type": "EscalationChecker",
+            "description": "",
+            "tools": [],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "itinerary_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "```json\n{\n  \"destination\": \"Boston, Massachusetts\",\n  \"summary\": \"A historic and culinary weekend getaway to Boston, focusing on the American Revolution's landmarks and the city's renowned New England seafood, all while staying comfortably within your $1500 budget.\",\n  \"total_estimated_cost\": 1107,\n  \"flights\": [\n    {\n      \"flight_number\": \"B6 100\",\n      \"airline\": \"JetBlue Airways\",\n      \"departure_time\": \"4:00 PM PST\",\n      \"arrival_time\": \"12:30 AM EST (Sat)\",\n      \"departure_airport\": \"SFO\",\n      \"arrival_airport\": \"BOS\",\n      \"price\": 350\n    }\n  ],\n  \"accommodation\": {\n    \"name\": \"Omni Parker House\",\n    \"address\": \"60 School St, Boston, MA\",\n    \"price_per_night\": 250,\n    \"rating\": 4.5,\n    \"booking_link\": \"Search for Omni Parker House Boston\"\n  },\n  \"itinerary_days\": [\n    {\n      \"day_number\": 1,\n      \"date\": \"Friday, August 7, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"4:00 PM - 12:30 AM\",\n          \"title\": \"Flight from San Francisco to Boston\",\n          \"description\": \"Depart SFO for a cross-country flight to Boston Logan International Airport (BOS).\",\n          \"location\": \"SFO to BOS\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"1:30 AM\",\n          \"title\": \"Hotel Check-in\",\n          \"description\": \"Check into the historic Omni Parker House, located right on the Freedom Trail.\",\n          \"location\": \"Omni Parker House\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"8:00 PM (Self-Funded)\",\n          \"title\": \"Late Night Snack/Drinks\",\n          \"description\": \"Grab a quick bite or a drink near the hotel after settling in (cost is part of accommodation/misc budget).\",\n          \"location\": \"Downtown Crossing/Hotel Bar\",\n          \"cost\": 0\n        }\n      ]\n    },\n    {\n      \"day_number\": 2,\n      \"date\": \"Saturday, August 8, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"9:00 AM\",\n          \"title\": \"Historic Freedom Trail Tour\",\n          \"description\": \"Join the official 'Walk Into History' tour led by an 18th-century costumed guide, covering 11 of the 16 historic sites.\",\n          \"location\": \"Boston Common Visitor Center (Start)\",\n          \"cost\": 17\n        },\n        {\n          \"time\": \"12:00 PM\",\n          \"title\": \"Lunch at Faneuil Hall & Quincy Market\",\n          \"description\": \"Explore the historic marketplace and grab a casual New England lunch, perhaps a clam chowder or a lobster roll.\",\n          \"location\": \"Faneuil Hall Marketplace\",\n          \"cost\": 30\n        },\n        {\n          \"time\": \"2:00 PM\",\n          \"title\": \"Explore the North End & Cannoli Stop\",\n          \"description\": \"Walk through Boston's oldest residential neighborhood, the North End, and visit the Old North Church. Stop for a famous cannoli at Mike's Pastry or Modern Pastry.\",\n          \"location\": \"North End\",\n          \"cost\": 20\n        },\n        {\n          \"time\": \"4:30 PM\",\n          \"title\": \"Relax or Explore Beacon Hill\",\n          \"description\": \"Take a leisurely stroll through the picturesque, gas-lit streets of Beacon Hill, known for its Federal-style rowhouses.\",\n          \"location\": \"Beacon Hill\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"7:30 PM\",\n          \"title\": \"Upscale Seafood Dinner\",\n          \"description\": \"Enjoy a premium seafood dinner at a highly-rated spot like Atlantic Fish or Row 34, focusing on fresh catch and oysters.\",\n          \"location\": \"Atlantic Fish or Row 34\",\n          \"cost\": 100\n        }\n      ]\n    },\n    {\n      \"day_number\": 3,\n      \"date\": \"Sunday, August 9, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"9:00 AM\",\n          \"title\": \"Boston Common and Public Garden Stroll\",\n          \"description\": \"Enjoy a morning walk through the Boston Common and the adjacent Public Garden, perhaps watching the Swan Boats.\",\n          \"location\": \"Boston Common and Public Garden\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"11:00 AM\",\n          \"title\": \"Museum or Historic Site Visit\",\n          \"description\": \"Visit a final historic site like the Old State House or the Paul Revere House (ticket cost is minimal and covered by buffer).\",\n          \"location\": \"Old State House or Paul Revere House\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"1:00 PM\",\n          \"title\": \"Farewell Seafood Lunch\",\n          \"description\": \"Have a final New England meal, perhaps a lobster bisque or fish and chips, before heading to the airport.\",\n          \"location\": \"Near the Waterfront\",\n          \"cost\": 30\n        },\n        {\n          \"time\": \"3:00 PM\",\n          \"title\": \"Travel to BOS Airport\",\n          \"description\": \"Check out of the hotel and take a taxi or the MBTA Blue Line to Logan International Airport.\",\n          \"location\": \"BOS Airport\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"5:00 PM - 8:30 PM\",\n          \"title\": \"Flight from Boston to San Francisco\",\n          \"description\": \"Depart BOS for the return flight to SFO.\",\n          \"location\": \"BOS to SFO\",\n          \"cost\": 0\n        }\n      ]\n    }\n  ],\n  \"fallback_requested\": false,\n  \"fallback_message\": null\n}\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "evaluator_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "{\n  \"score\": 0.78,\n  \"feasibility_rating\": 0.7,\n  \"quality_rating\": 0.75,\n  \"constraint_adherence\": 0.9,\n  \"feedback\": \"The itinerary has a few logical and structural issues. First, on Day 1, there is a chronological error: the 'Late Night Snack/Drinks' is scheduled for 8:00 PM, which is listed after the 1:30 AM hotel check-in. Second, the 'flights' array only lists the outbound flight from SFO to BOS ($350), but Day 3 includes a return flight. Please include the return flight details and price in the 'flights' array and ensure the 'total_estimated_cost' accurately reflects both flights.\",\n  \"passed\": false\n}"
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "itinerary_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "```json\n{\n  \"destination\": \"Boston, Massachusetts\",\n  \"summary\": \"A historic and culinary weekend getaway to Boston, focusing on the American Revolution's landmarks and the city's renowned New England seafood, all while staying comfortably within your $1500 budget.\",\n  \"total_estimated_cost\": 1397,\n  \"flights\": [\n    {\n      \"flight_number\": \"B6 100\",\n      \"airline\": \"JetBlue Airways\",\n      \"departure_time\": \"4:00 PM PST\",\n      \"arrival_time\": \"12:30 AM EST (Sat)\",\n      \"departure_airport\": \"SFO\",\n      \"arrival_airport\": \"BOS\",\n      \"price\": 350\n    },\n    {\n      \"flight_number\": \"B6 200\",\n      \"airline\": \"JetBlue Airways\",\n      \"departure_time\": \"5:00 PM EST\",\n      \"arrival_time\": \"8:30 PM PST\",\n      \"departure_airport\": \"BOS\",\n      \"arrival_airport\": \"SFO\",\n      \"price\": 350\n    }\n  ],\n  \"accommodation\": {\n    \"name\": \"Omni Parker House\",\n    \"address\": \"60 School St, Boston, MA\",\n    \"price_per_night\": 250,\n    \"rating\": 4.5,\n    \"booking_link\": \"Search for Omni Parker House Boston\"\n  },\n  \"itinerary_days\": [\n    {\n      \"day_number\": 1,\n      \"date\": \"Friday, August 7, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"4:00 PM - 12:30 AM\",\n          \"title\": \"Flight from San Francisco to Boston\",\n          \"description\": \"Depart SFO for a cross-country flight to Boston Logan International Airport (BOS).\",\n          \"location\": \"SFO to BOS\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"1:30 AM\",\n          \"title\": \"Hotel Check-in\",\n          \"description\": \"Check into the historic Omni Parker House, located right on the Freedom Trail, after a late arrival.\",\n          \"location\": \"Omni Parker House\",\n          \"cost\": 0\n        }\n      ]\n    },\n    {\n      \"day_number\": 2,\n      \"date\": \"Saturday, August 8, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"9:00 AM\",\n          \"title\": \"Historic Freedom Trail Tour\",\n          \"description\": \"Join the official 'Walk Into History' tour led by an 18th-century costumed guide, covering 11 of the 16 historic sites.\",\n          \"location\": \"Boston Common Visitor Center (Start)\",\n          \"cost\": 17\n        },\n        {\n          \"time\": \"12:00 PM\",\n          \"title\": \"Lunch at Faneuil Hall & Quincy Market\",\n          \"description\": \"Explore the historic marketplace and grab a casual New England lunch, perhaps a clam chowder or a lobster roll.\",\n          \"location\": \"Faneuil Hall Marketplace\",\n          \"cost\": 30\n        },\n        {\n          \"time\": \"2:00 PM\",\n          \"title\": \"Explore the North End & Cannoli Stop\",\n          \"description\": \"Walk through Boston's oldest residential neighborhood, the North End, and visit the Old North Church. Stop for a famous cannoli at Mike's Pastry or Modern Pastry.\",\n          \"location\": \"North End\",\n          \"cost\": 20\n        },\n        {\n          \"time\": \"4:30 PM\",\n          \"title\": \"Relax or Explore Beacon Hill\",\n          \"description\": \"Take a leisurely stroll through the picturesque, gas-lit streets of Beacon Hill, known for its Federal-style rowhouses.\",\n          \"location\": \"Beacon Hill\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"7:30 PM\",\n          \"title\": \"Upscale Seafood Dinner\",\n          \"description\": \"Enjoy a premium seafood dinner at a highly-rated spot like Atlantic Fish or Row 34, focusing on fresh catch and oysters.\",\n          \"location\": \"Atlantic Fish or Row 34\",\n          \"cost\": 100\n        }\n      ]\n    },\n    {\n      \"day_number\": 3,\n      \"date\": \"Sunday, August 9, 2026\",\n      \"activities\": [\n        {\n          \"time\": \"9:00 AM\",\n          \"title\": \"Boston Common and Public Garden Stroll\",\n          \"description\": \"Enjoy a morning walk through the Boston Common and the adjacent Public Garden, perhaps watching the Swan Boats.\",\n          \"location\": \"Boston Common and Public Garden\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"11:00 AM\",\n          \"title\": \"Museum or Historic Site Visit\",\n          \"description\": \"Visit a final historic site like the Old State House or the Paul Revere House (ticket cost is minimal and covered by buffer).\",\n          \"location\": \"Old State House or Paul Revere House\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"1:00 PM\",\n          \"title\": \"Farewell Seafood Lunch\",\n          \"description\": \"Have a final New England meal, perhaps a lobster bisque or fish and chips, before heading to the airport.\",\n          \"location\": \"Near the Waterfront\",\n          \"cost\": 30\n        },\n        {\n          \"time\": \"3:00 PM\",\n          \"title\": \"Travel to BOS Airport\",\n          \"description\": \"Check out of the hotel and take a taxi or the MBTA Blue Line to Logan International Airport.\",\n          \"location\": \"BOS Airport\",\n          \"cost\": 0\n        },\n        {\n          \"time\": \"5:00 PM - 8:30 PM\",\n          \"title\": \"Flight from Boston to San Francisco\",\n          \"description\": \"Depart BOS for the return flight to SFO.\",\n          \"location\": \"BOS to SFO\",\n          \"cost\": 0\n        }\n      ]\n    }\n  ],\n  \"fallback_requested\": false,\n  \"fallback_message\": null\n}\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "evaluator_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "{\n  \"score\": 1.0,\n  \"feasibility_rating\": 1.0,\n  \"quality_rating\": 1.0,\n  \"constraint_adherence\": 1.0,\n  \"feedback\": \"Excellent work! The chronological error on Day 1 has been resolved, and both flights are now correctly detailed in the flights array. The total estimated cost of $1397 is perfectly calculated and remains within the $1500 budget while fully satisfying the user's preferences for historic walks and seafood.\",\n  \"passed\": true\n}"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "eval_id": "sf_to_boston_premium",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "3-day weekend trip from San Francisco to Boston, budget $1500, historic walks and seafood spots"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "agents",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Fly from Los Angeles to Paris, France for a weekend, budget $100, luxury hotels only"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "{\n  \"score\": 1.0,\n  \"feasibility_rating\": 1.0,\n  \"quality_rating\": 1.0,\n  \"constraint_adherence\": 1.0,\n  \"feedback\": \"The agent handled an impossible user request perfectly. A $100 budget for a round-trip flight from Los Angeles to Paris with luxury accommodations is completely unrealistic. The agent correctly triggered the fallback pathway, explaining the cost breakdown clearly (flights starting at $670, luxury hotels at $495+/night) and providing a realistic budget recommendation of at least $1,500.\",\n  \"passed\": true\n}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "impossible_budget_fallback",
+      "agent_data": {
+        "agents": {
+          "itinerary_refinement_loop": {
+            "agent_id": "itinerary_refinement_loop",
+            "agent_type": "LoopAgent",
+            "description": "",
+            "tools": [],
+            "sub_agents": [
+              "itinerary_agent",
+              "evaluator_agent",
+              "escalation_checker"
+            ]
+          },
+          "itinerary_agent": {
+            "agent_id": "itinerary_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert, premium AI Travel Itinerary Planner. Your goal is to construct highly feasible, comprehensive, and engaging weekend getaway plans based on user preferences.\n\n{feedback_instruction}\n\nCRITICAL RULES & OPERATING PROCEDURES:\n1. REAL-WORLD DATA GROUNDING: You MUST run the google_search tool to find accurate, real, and up-to-date options for flights, events, hotels, and timings. Do not invent flight numbers, hotel names, prices, or activity availability.\n2. DATE FEASIBILITY: Ensure the flight schedules, lodging, and activities align. For a typical weekend getaway, focus on a Friday evening to Sunday afternoon/evening schedule.\n3. COST ACCURACY: Give realistic prices and keep the total cost within the user's requested budget. Sum the prices of flights, accommodations (multiplied by the number of nights), and activity ticket costs to calculate 'total_estimated_cost'.\n4. NO HALLUCINATION / FALLBACK HANDLING:\n   - If your google_search queries return no results, or if the user's budget and constraints are      completely unrealistic (e.g., $10 flights, flying halfway around the world in 1 hour, etc.),      you MUST NOT hallucinate fake prices or flights.\n   - Instead, you must trigger the fallback path: set `fallback_requested` to `True` in your structured      response, specify `fallback_message` explaining exactly why (e.g., 'We couldn't find any flights      matching your $50 budget from New York to Tokyo. Please increase your budget or choose a closer destination.'),      and leave the flights, accommodation, and daily activities empty or minimal.\n5. STRICT STRUCTURED OUTPUT: You MUST output ONLY a single, valid JSON block matching this exact schema:\n{\n  \"destination\": \"string (name of city)\",\n  \"summary\": \"string (brief and engaging summary)\",\n  \"total_estimated_cost\": number,\n  \"flights\": [\n    {\n      \"flight_number\": \"string\",\n      \"airline\": \"string\",\n      \"departure_time\": \"string (ISO format or descriptive)\",\n      \"arrival_time\": \"string (ISO format or descriptive)\",\n      \"departure_airport\": \"string\",\n      \"arrival_airport\": \"string\",\n      \"price\": number\n    }\n  ],\n  \"accommodation\": {\n    \"name\": \"string\",\n    \"address\": \"string or null\",\n    \"price_per_night\": number or null,\n    \"rating\": number or null,\n    \"booking_link\": \"string or null\"\n  } or null,\n  \"itinerary_days\": [\n    {\n      \"day_number\": number,\n      \"date\": \"string\",\n      \"activities\": [\n        {\n          \"time\": \"string\",\n          \"title\": \"string\",\n          \"description\": \"string\",\n          \"location\": \"string\",\n          \"cost\": number\n        }\n      ]\n    }\n  ],\n  \"fallback_requested\": boolean,\n  \"fallback_message\": \"string or null\"\n}\nDo NOT include any extra text, introduction, or conversation around the JSON block. Ensure the JSON is completely valid.",
+            "tools": [],
+            "sub_agents": []
+          },
+          "evaluator_agent": {
+            "agent_id": "evaluator_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert quality assurance travel agent acting as an LLM-as-a-Judge.\nYour job is to objectively evaluate the travel itinerary proposals generated by our primary travel agent.\n\nCRITICAL EVALUATION CRITERIA:\n1. FEASIBILITY (0.0 to 1.0):\n   - Do the dates and times connect logically? (e.g., cannot check in to a hotel before the inbound flight lands, cannot have activities before arriving at the destination).\n   - Are the travel schedules physically realistic?\n2. QUALITY (0.0 to 1.0):\n   - Is the summary engaging and premium?\n   - Are the day-by-day activities detailed with times, titles, locations, and descriptions?\n   - Ensure there are no placeholder texts, hallucinations, or ungrounded details.\n3. CONSTRAINT ADHERENCE (0.0 to 1.0):\n   - Does the total estimated cost stay within the user's budget?\n   - Were specific request preferences (e.g., museums, seafood, historic walks) incorporated?\n   - Note: If the primary agent requests a fallback (fallback_requested is True), but provides a highly helpful explanation of why the constraints were impossible and gives recommendations, award a score of 1.0 as the fallback pathway is valid and accurate.\n\nSCORING RULES:\n- To calculate `score`, take the average of feasibility, quality, and constraint adherence.\n- Set `passed` to True if and only if `score` is 0.8 or higher.\n- If `passed` is False, `feedback` must be highly specific, describing exactly which parts are missing, inconsistent, or over budget, so the primary agent knows exactly how to refine the itinerary in the next turn.\n\nEvaluate the following itinerary proposal:\nUser Preferences / Query: {user_query}\n\nGenerated Itinerary Proposal (JSON):\n{itinerary_proposal_json}\n",
+            "tools": [],
+            "sub_agents": []
+          },
+          "escalation_checker": {
+            "agent_id": "escalation_checker",
+            "agent_type": "EscalationChecker",
+            "description": "",
+            "tools": [],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "itinerary_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "```json\n{\n  \"destination\": \"Paris, France\",\n  \"summary\": \"The requested trip from Los Angeles to Paris with a $100 budget and luxury accommodations is not feasible. The cost of flights and luxury hotels far exceeds the budget.\",\n  \"total_estimated_cost\": 0,\n  \"flights\": [],\n  \"accommodation\": null,\n  \"itinerary_days\": [],\n  \"fallback_requested\": true,\n  \"fallback_message\": \"The total budget of $100 is completely unrealistic for a round-trip international flight from Los Angeles to Paris and two nights in a luxury hotel. The cheapest round-trip flights alone start around $670, and luxury hotels in Paris typically cost $495 or more per night. Please increase your budget significantly (to at least $1,500) or choose a much closer, less expensive destination to proceed with a feasible itinerary.\"\n}\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "evaluator_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "{\n  \"score\": 1.0,\n  \"feasibility_rating\": 1.0,\n  \"quality_rating\": 1.0,\n  \"constraint_adherence\": 1.0,\n  \"feedback\": \"The agent handled an impossible user request perfectly. A $100 budget for a round-trip flight from Los Angeles to Paris with luxury accommodations is completely unrealistic. The agent correctly triggered the fallback pathway, explaining the cost breakdown clearly (flights starting at $670, luxury hotels at $495+/night) and providing a realistic budget recommendation of at least $1,500.\",\n  \"passed\": true\n}"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "eval_id": "impossible_budget_fallback",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Fly from Los Angeles to Paris, France for a weekend, budget $100, luxury hotels only"
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "agents",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

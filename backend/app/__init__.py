@@ -1,3 +1,3 @@
-from .agent import app, root_agent
+from .agent import backend, root_agent
 
-__all__ = ["app", "root_agent"]
+__all__ = ["backend", "root_agent"]

@@ -18,9 +18,10 @@ RUN pip install --no-cache-dir uv==0.8.13
 
 WORKDIR /code
 
-COPY ./pyproject.toml ./README.md ./uv.lock* ./
+# Copy all files from backend context into /code/backend
+COPY . /code/backend
 
-COPY ./backend ./backend
+WORKDIR /code/backend
 
 RUN uv sync --frozen
 
@@ -30,6 +31,9 @@ ENV COMMIT_SHA=${COMMIT_SHA}
 ARG AGENT_VERSION=0.0.0
 ENV AGENT_VERSION=${AGENT_VERSION}
 
+ENV PYTHONPATH=/code
+
 EXPOSE 8080
 
-CMD ["uv", "run", "uvicorn", "backend.fast_api_app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "uvicorn", "backend.app.fast_api_app:app", "--host", "0.0.0.0", "--port", "8080"]
+
