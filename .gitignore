@@ -36,6 +36,10 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
+# SQLite databases
+session.db
+
+
 # Terraform
 .terraform/
 *.tfstate

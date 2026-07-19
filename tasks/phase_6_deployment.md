@@ -20,10 +20,10 @@ To fully leverage the Google Agents CLI (`agents-cli`) and deploy to Vertex AI A
 - [x] If using a `LoopAgent` for the generate-evaluate-refine loop, implement an `EscalationChecker` (a custom `BaseAgent` or callback) to break the loop when the evaluator returns a "pass" grade.
 
 ## Phase 6.4: Migrating HITL & Custom REST APIs
-- `[ ]` Extract `/api/request`, `/api/status`, `/api/pending`, `/api/approve`, and `/api/reject` from the old `main.py`.
-- `[ ]` Open the ADK-generated `app/fast_api_app.py`.
-- `[ ]` Mount these custom routes onto the core FastAPI app during its initialization phase, ensuring they still interact with the `database.py` (Firestore) logic.
-- `[ ]` Re-wire the background orchestration trigger to use the new ADK `Runner` instead of the old custom orchestrator.
+- [x] Extract `/api/request`, `/api/status`, `/api/pending`, `/api/approve`, and `/api/reject` from the old `main.py`.
+- [x] Open the ADK-generated `app/fast_api_app.py`.
+- [x] Mount these custom routes onto the core FastAPI app during its initialization phase, ensuring they still interact with the `database.py` (Firestore) logic.
+- [x] Re-wire the background orchestration trigger to use the new ADK `Runner` instead of the old custom orchestrator.
 
 ## Phase 6.5: Infrastructure, Terraform, & Configuration Updates
 - `[ ]` Modify the generated `backend/deployment/terraform/single-project/iam.tf`.
