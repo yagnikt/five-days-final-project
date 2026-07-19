@@ -106,6 +106,45 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   member   = "allUsers"
 }
 
+# Cloud Run Service for Frontend Nginx
+resource "google_cloud_run_v2_service" "frontend" {
+  name     = var.frontend_service_name
+  location = var.region
+  project  = var.project_id
+
+  template {
+    service_account = google_service_account.cloud_run_sa.email
+    containers {
+      image = "gcr.io/${var.project_id}/${var.frontend_service_name}:latest" # Placeholder image to build during CI/CD
+
+      env {
+        name  = "BACKEND_URL"
+        value = google_cloud_run_v2_service.backend.uri
+      }
+    }
+  }
+
+  traffic {
+    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+    percent = 100
+  }
+
+  depends_on = [
+    google_project_service.apis,
+    google_cloud_run_v2_service.backend
+  ]
+}
+
+# Allow public access to Frontend Cloud Run
+resource "google_cloud_run_v2_service_iam_member" "frontend_public_access" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.frontend.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+
 # IAM Role Bindings for Local User
 resource "google_project_iam_member" "user_firestore" {
   project    = var.project_id

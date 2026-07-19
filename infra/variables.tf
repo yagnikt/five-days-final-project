@@ -25,3 +25,10 @@ variable "admin_user_email" {
   description = "The email of the administrator to receive IAM bindings locally"
   type        = string
 }
+
+variable "frontend_service_name" {
+  description = "The name of the frontend Cloud Run service"
+  type        = string
+  default     = "travel-itinerary-planner-frontend"
+}
+

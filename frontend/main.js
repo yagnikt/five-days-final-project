@@ -1,6 +1,6 @@
 // AeroPlan AI - Core Interactive Logic & State Orchestration
 
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) || 'http://localhost:8000';
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL !== undefined) ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:8000';
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Session Setup & Persistent State
