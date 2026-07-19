@@ -19,7 +19,7 @@ This agent solves the manual and time-intensive process of finding optimal weeke
 
 # Current Status
 
-**Status: Completed! Phase 6 has been successfully completed, with all local evaluations passing at ~90% and the containerized agent backend deployed natively to Google Cloud Agent Runtime on Vertex AI.**
+**Status: In Progress! Working on Phase 8 to containerize the frontend and deploy it to Google Cloud Run utilizing Terraform and an Nginx reverse proxy.**
 
 The implementation plan has been established and broken down into phases. Task markdown files have been generated in the `/tasks` directory.
 
@@ -32,4 +32,5 @@ The implementation plan has been established and broken down into phases. Task m
 - [x] **Phase 5: Frontend UI Development**: Build the user-facing Client View and Admin Dashboard with latency-aware polling status updates.
 - [x] **Phase 6: Cloud Deployment via Vertex AI Agent Engine**: @[tasks/phase_6_deployment.md]
 - [x] **Phase 7: Cleanup of Pre-Migration Code**: @[tasks/phase_7_cleanup.md]
+- [ ] **Phase 8: Frontend Infrastructure & Cloud Run Deployment**: @[tasks/phase_8_frontend_infrastructure.md]
 
