@@ -19,7 +19,9 @@ resource "google_project_service" "apis" {
     "run.googleapis.com",
     "firestore.googleapis.com",
     "aiplatform.googleapis.com",
-    "iam.googleapis.com"
+    "iam.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "artifactregistry.googleapis.com"
   ])
   project            = var.project_id
   service            = each.key
@@ -83,6 +85,13 @@ resource "google_cloud_run_v2_service" "backend" {
         name  = "FIRESTORE_DATABASE"
         value = var.firestore_database_name
       }
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "2Gi"
+        }
+      }
     }
   }
 
@@ -103,7 +112,7 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   location = var.region
   name     = google_cloud_run_v2_service.backend.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = "domain:${split("@", var.admin_user_email)[1]}"
 }
 
 # Cloud Run Service for Frontend Nginx
@@ -141,7 +150,7 @@ resource "google_cloud_run_v2_service_iam_member" "frontend_public_access" {
   location = var.region
   name     = google_cloud_run_v2_service.frontend.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = "domain:${split("@", var.admin_user_email)[1]}"
 }
 
 
@@ -157,5 +166,32 @@ resource "google_project_iam_member" "user_vertex" {
   project    = var.project_id
   role       = "roles/aiplatform.user"
   member     = "user:${var.admin_user_email}"
+  depends_on = [google_project_service.apis]
+}
+
+# Dynamic Project Data Source to resolve Project Number
+data "google_project" "project" {}
+
+# Grant Storage Object Viewer to default Compute Engine SA (required for Cloud Build to pull source tarballs)
+resource "google_project_iam_member" "compute_storage_viewer" {
+  project    = var.project_id
+  role       = "roles/storage.objectViewer"
+  member     = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  depends_on = [google_project_service.apis]
+}
+
+# Grant Artifact Registry Admin to default Compute Engine SA (required for Cloud Build to push to virtual GCR)
+resource "google_project_iam_member" "compute_artifact_admin" {
+  project    = var.project_id
+  role       = "roles/artifactregistry.admin"
+  member     = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  depends_on = [google_project_service.apis]
+}
+
+# Grant Artifact Registry Admin to default Cloud Build SA (required for Cloud Build to push to virtual GCR)
+resource "google_project_iam_member" "cloudbuild_artifact_admin" {
+  project    = var.project_id
+  role       = "roles/artifactregistry.admin"
+  member     = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   depends_on = [google_project_service.apis]
 }
