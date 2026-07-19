@@ -52,5 +52,6 @@ variable "app_sa_roles" {
     "roles/storage.admin",
     "roles/serviceusage.serviceUsageConsumer",
     "roles/datastore.user",
+    "roles/secretmanager.secretAccessor",
   ]
 }

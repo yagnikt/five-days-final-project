@@ -21,7 +21,8 @@ resource "google_project_service" "apis" {
     "aiplatform.googleapis.com",
     "iam.googleapis.com",
     "cloudbuild.googleapis.com",
-    "artifactregistry.googleapis.com"
+    "artifactregistry.googleapis.com",
+    "secretmanager.googleapis.com"
   ])
   project            = var.project_id
   service            = each.key
@@ -58,6 +59,13 @@ resource "google_project_iam_member" "firestore_user" {
 resource "google_project_iam_member" "vertex_user" {
   project    = var.project_id
   role       = "roles/aiplatform.user"
+  member     = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_project_iam_member" "secret_accessor" {
+  project    = var.project_id
+  role       = "roles/secretmanager.secretAccessor"
   member     = "serviceAccount:${google_service_account.cloud_run_sa.email}"
   depends_on = [google_project_service.apis]
 }
@@ -112,7 +120,7 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   location = var.region
   name     = google_cloud_run_v2_service.backend.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = "domain:yagnikt.altostrat.com"
 }
 
 # Cloud Run Service for Frontend Nginx
@@ -150,7 +158,7 @@ resource "google_cloud_run_v2_service_iam_member" "frontend_public_access" {
   location = var.region
   name     = google_cloud_run_v2_service.frontend.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = "domain:yagnikt.altostrat.com"
 }
 
 
