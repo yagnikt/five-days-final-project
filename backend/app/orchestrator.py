@@ -10,17 +10,22 @@ from evaluator_agent import evaluator_agent, EvaluationResult
 from security import sanitize_and_validate_input
 
 
-def _log_to_firestore(request_id: Optional[str], message: str) -> None:
+from logger import logger
+
+
+def _log_to_firestore(request_id: Optional[str], message: str, user_facing: bool = False) -> None:
     """
-    Utility helper to log messages both to the server console and to Firestore.
+    Utility helper to log structured messages to Cloud Logging and optionally update the Firestore progress message.
     """
-    print(message)
-    if request_id:
+    # Emit structured JSON-compatible log with request context
+    logger.info(message, extra={"request_id": request_id, "user_facing": user_facing})
+    
+    if request_id and user_facing:
         try:
-            from database import add_request_log
-            add_request_log(request_id, message)
+            from database import update_user_facing_status
+            update_user_facing_status(request_id, message)
         except Exception as e:
-            print(f"⚠️ Failed to write log to Firestore: {e}")
+            logger.error(f"⚠️ Failed to write status update to Firestore: {e}", extra={"request_id": request_id})
 
 
 async def orchestrate_itinerary_generation(
@@ -47,10 +52,10 @@ async def orchestrate_itinerary_generation(
         A tuple of (final_itinerary_dict, evaluation_details_dict, retry_count).
     """
     # 0. Validate and Sanitize Input
-    _log_to_firestore(request_id, "Validating and sanitizing user inputs...")
+    _log_to_firestore(request_id, "Validating and sanitizing user inputs...", user_facing=True)
     is_safe, validation_result = sanitize_and_validate_input(query)
     if not is_safe:
-        _log_to_firestore(request_id, f"⚠️ Input Validation Failed: {validation_result}")
+        _log_to_firestore(request_id, f"⚠️ Input Validation Failed: {validation_result}", user_facing=True)
         fallback_itinerary = {
             "destination": "Unknown",
             "summary": "Request was blocked by safety validation guardrails.",
@@ -107,11 +112,11 @@ async def orchestrate_itinerary_generation(
     last_itinerary_proposal = {}
     last_evaluation = {}
     
-    _log_to_firestore(request_id, f"🎬 Starting Orchestrated Generation. User Query: '{query}'")
+    _log_to_firestore(request_id, f"🎬 Starting Orchestrated Generation. User Query: '{query}'", user_facing=True)
     
     while retry_count <= max_retries:
-        _log_to_firestore(request_id, f"🔄 [Iteration {retry_count} / Max {max_retries}]")
-        _log_to_firestore(request_id, "⏳ running primary planning agent...")
+        _log_to_firestore(request_id, f"🔄 [Iteration {retry_count} / Max {max_retries}]", user_facing=True)
+        _log_to_firestore(request_id, "⏳ running primary planning agent...", user_facing=True)
         
         # Run primary agent to get itinerary proposal
         event_generator = primary_runner.run(
@@ -125,7 +130,15 @@ async def orchestrate_itinerary_generation(
             func_calls = event.get_function_calls()
             if func_calls:
                 for fc in func_calls:
-                    _log_to_firestore(request_id, f"   🔍 [AGENT TOOL CALL]: {fc.name} with args: {fc.args}")
+                    # Comprehensive structured JSON logging for tool calls
+                    logger.info("Agent invoked tool", extra={
+                        "request_id": request_id,
+                        "tool_name": fc.name,
+                        "args": fc.args,
+                        "event_type": "tool_call"
+                    })
+                    # Update high-level user progress indicator without raw argument leakages
+                    _log_to_firestore(request_id, f"   🔍 [AGENT TOOL CALL]: Invoking {fc.name}...", user_facing=True)
             if event.content and event.content.parts:
                 for part in event.content.parts:
                     if part.text:
@@ -156,7 +169,7 @@ async def orchestrate_itinerary_generation(
             
         # Check if the primary agent itself raised a fallback
         if itinerary_dict.get("fallback_requested"):
-            _log_to_firestore(request_id, "⚠️ Primary agent triggered fallback pathway directly.")
+            _log_to_firestore(request_id, "⚠️ Primary agent triggered fallback pathway directly.", user_facing=True)
             last_evaluation = {
                 "score": 1.0,
                 "feasibility_rating": 1.0,
@@ -171,11 +184,11 @@ async def orchestrate_itinerary_generation(
                     from database import move_to_pending_approval
                     move_to_pending_approval(request_id, user_id, session_id, query, last_itinerary_proposal, last_evaluation)
                 except Exception as e:
-                    print(f"⚠️ Failed to commit fallback to pending_approvals: {e}")
+                    logger.error(f"⚠️ Failed to commit fallback to pending_approvals: {e}", extra={"request_id": request_id})
                     
             return last_itinerary_proposal, last_evaluation, retry_count
             
-        _log_to_firestore(request_id, "⏳ running LLM-as-a-judge evaluation...")
+        _log_to_firestore(request_id, "⏳ running LLM-as-a-judge evaluation...", user_facing=True)
         
         # Evaluate the generated itinerary proposal using the evaluator agent
         eval_input = (
@@ -213,7 +226,7 @@ async def orchestrate_itinerary_generation(
             eval_dict = json.loads(eval_text)
             last_evaluation = eval_dict
         except json.JSONDecodeError:
-            _log_to_firestore(request_id, "❌ Failed to parse evaluation response as JSON.")
+            _log_to_firestore(request_id, "❌ Failed to parse evaluation response as JSON.", user_facing=False)
             eval_dict = {
                 "score": 0.5,
                 "feasibility_rating": 0.5,
@@ -224,18 +237,31 @@ async def orchestrate_itinerary_generation(
             }
             last_evaluation = eval_dict
             
-        _log_to_firestore(request_id, f"📈 Evaluation Score: {eval_dict.get('score')} | Passed: {eval_dict.get('passed')}")
-        _log_to_firestore(request_id, f"💬 Feedback: {eval_dict.get('feedback')}")
+        # Log evaluation metrics with structured JSON attributes
+        logger.info("LLM-as-a-judge evaluation completed", extra={
+            "request_id": request_id,
+            "metrics": {
+                "score": eval_dict.get("score"),
+                "passed": eval_dict.get("passed"),
+                "feasibility": eval_dict.get("feasibility_rating"),
+                "quality": eval_dict.get("quality_rating"),
+                "constraint_adherence": eval_dict.get("constraint_adherence")
+            },
+            "feedback": eval_dict.get("feedback")
+        })
+        
+        _log_to_firestore(request_id, f"📈 Evaluation Score: {eval_dict.get('score')} | Passed: {eval_dict.get('passed')}", user_facing=True)
+        _log_to_firestore(request_id, f"💬 Feedback: {eval_dict.get('feedback')}", user_facing=True)
         
         if eval_dict.get("passed"):
-            _log_to_firestore(request_id, "🎉 Success! Itinerary passed quality evaluation threshold.")
+            _log_to_firestore(request_id, "🎉 Success! Itinerary passed quality evaluation threshold.", user_facing=True)
             
             if request_id:
                 try:
                     from database import move_to_pending_approval
                     move_to_pending_approval(request_id, user_id, session_id, query, last_itinerary_proposal, last_evaluation)
                 except Exception as e:
-                    print(f"⚠️ Failed to commit proposal to pending_approvals: {e}")
+                    logger.error(f"⚠️ Failed to commit proposal to pending_approvals: {e}", extra={"request_id": request_id})
                     
             return last_itinerary_proposal, last_evaluation, retry_count
             
@@ -255,12 +281,12 @@ async def orchestrate_itinerary_generation(
                 parts=[types.Part(text=refinement_prompt)]
             )
             
-    _log_to_firestore(request_id, "⚠️ Reached max retries without a passing score. Committing best available proposal as pending review.")
+    _log_to_firestore(request_id, "⚠️ Reached max retries without a passing score. Committing best available proposal as pending review.", user_facing=True)
     if request_id:
         try:
             from database import move_to_pending_approval
             move_to_pending_approval(request_id, user_id, session_id, query, last_itinerary_proposal, last_evaluation)
         except Exception as e:
-            print(f"⚠️ Failed to commit fallback to pending_approvals: {e}")
+            logger.error(f"⚠️ Failed to commit fallback to pending_approvals: {e}", extra={"request_id": request_id})
             
     return last_itinerary_proposal, last_evaluation, retry_count

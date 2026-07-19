@@ -33,7 +33,7 @@ def create_itinerary_request(request_id: str, user_id: str, session_id: str, que
         "status": "processing",
         "created_at": datetime.utcnow().isoformat(),
         "updated_at": datetime.utcnow().isoformat(),
-        "logs": ["Initialized itinerary planner request thread."],
+        "current_status_message": "Initialized itinerary planner request thread.",
         "itinerary": None,
         "evaluation": None
     }
@@ -41,15 +41,22 @@ def create_itinerary_request(request_id: str, user_id: str, session_id: str, que
     return data
 
 
-def add_request_log(request_id: str, log_message: str) -> None:
+def update_user_facing_status(request_id: str, status_message: str) -> None:
     """
-    Appends a log message to the log stream of an active request.
+    Updates the single user-facing progress status message in Firestore.
     """
     doc_ref = db.collection(REQUESTS_COLLECTION).document(request_id)
     doc_ref.update({
-        "logs": firestore.ArrayUnion([f"[{datetime.utcnow().strftime('%H:%M:%S')}] {log_message}"]),
+        "current_status_message": status_message,
         "updated_at": datetime.utcnow().isoformat()
     })
+
+
+def add_request_log(request_id: str, log_message: str) -> None:
+    """
+    Deprecated: Delegates to update_user_facing_status for backward compatibility.
+    """
+    update_user_facing_status(request_id, log_message)
 
 
 def get_itinerary_request(request_id: str) -> Optional[Dict[str, Any]]:

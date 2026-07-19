@@ -9,6 +9,7 @@ from typing import Optional, List, Dict, Any
 from google.adk.sessions import VertexAiSessionService, InMemorySessionService
 from orchestrator import orchestrate_itinerary_generation
 import database as db
+from logger import logger
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -63,6 +64,8 @@ async def run_orchestration_background(request_id: str, query: str, user_id: str
             request_id=request_id
         )
     except Exception as e:
+        # Log detailed traceback context with request identification structuredly
+        logger.exception("Unexpected exception occurred during background orchestration", extra={"request_id": request_id})
         # Catch unexpected exceptions and update request status
         db.add_request_log(request_id, f"❌ Unexpected Orchestrator Exception: {str(e)}")
         db.update_request_status(request_id, "failed")
@@ -122,6 +125,11 @@ def get_status(id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Request with ID {id} not found."
         )
+    # Synthesize 'logs' list from 'current_status_message' for frontend compatibility
+    if "current_status_message" in req_data:
+        req_data["logs"] = [req_data["current_status_message"]]
+    elif "logs" not in req_data:
+        req_data["logs"] = []
     return req_data
 
 

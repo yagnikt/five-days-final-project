@@ -112,7 +112,7 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   location = var.region
   name     = google_cloud_run_v2_service.backend.name
   role     = "roles/run.invoker"
-  member   = "domain:${split("@", var.admin_user_email)[1]}"
+  member   = "allUsers"
 }
 
 # Cloud Run Service for Frontend Nginx
@@ -150,7 +150,7 @@ resource "google_cloud_run_v2_service_iam_member" "frontend_public_access" {
   location = var.region
   name     = google_cloud_run_v2_service.frontend.name
   role     = "roles/run.invoker"
-  member   = "domain:${split("@", var.admin_user_email)[1]}"
+  member   = "allUsers"
 }
 
 
