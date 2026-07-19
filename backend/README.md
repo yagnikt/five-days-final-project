@@ -1,19 +1,27 @@
-# backend
+# AI-Driven Travel Itinerary Planner - Backend
 
-
-Agent generated with `agents-cli` version `1.1.0`
+Agent codebase built using the Google ADK and `agents-cli`.
 
 ## Project Structure
 
 ```
 backend/
-├── backend/         # Core agent code
-│   ├── agent.py               # Main agent logic
-│   ├── fast_api_app.py        # FastAPI Backend server
-│   └── app_utils/             # App utilities and helpers
-├── tests/                     # Unit, integration, and load tests
-├── GEMINI.md                  # AI-assisted development guide
-└── pyproject.toml             # Project dependencies
+├── app/                             # Core agent & API code (Consolidated ADK)
+│   ├── app_utils/                   # Utilities and helper modules
+│   ├── agent.py                     # Main ADK routing agent logic
+│   ├── itinerary_agent.py           # Primary travel agent with Google Search grounding
+│   ├── evaluator_agent.py           # Gemini Flash LLM-as-a-judge real-time evaluator
+│   ├── orchestrator.py              # Real-time grading orchestration & agent loop
+│   ├── database.py                  # Firestore collections and Google Agent Memory Bank integration
+│   ├── fast_api_app.py              # FastAPI server implementing routes for dashboard & client polling
+│   ├── security.py                  # Vertex AI Safety Settings and input validation
+│   └── main.py                      # Main entrypoint script to launch the FastAPI server
+├── tests/                           # Offline unit, integration, and load test suite
+│   └── evalsets/                    # Evaluation datasets for regression checks
+├── Dockerfile                       # Container deployment definition
+├── agents-cli-manifest.yaml         # Deployment and evaluation configuration metadata
+├── GEMINI.md                        # AI-assisted development instructions
+└── pyproject.toml                   # Project dependencies and environment metadata
 ```
 
 > 💡 **Tip:** Use [Antigravity CLI](https://antigravity.google/) for AI-assisted development - project context is pre-configured in `GEMINI.md`.

@@ -1,62 +1,95 @@
 # AI-Driven Travel Itinerary Planner
 
-An intelligent, enterprise-grade weekend travel planner that solves the manual, time-intensive process of finding optimal getaway itineraries. This platform leverages real-time web search grounding, integrates a real-time LLM-as-a-judge evaluation layer, implements persistent context with the Google Agent Memory Bank, incorporates a Human-in-the-Loop (HITL) administrator approval dashboard, and deploys using `agents-cli`.
+An intelligent, enterprise-grade weekend travel planner that solves the manual, time-intensive process of finding optimal getaway itineraries. This platform leverages real-time web search grounding, integrates a real-time LLM-as-a-judge evaluation layer, implements persistent context with the Google Agent Memory Bank, incorporates a Human-in-the-Loop (HITL) administrator approval dashboard, and deploys using `agents-cli` to Google Cloud Agent Runtime.
 
 ---
 
-## 🗺️ Phase-by-Phase Roadmap
+## ⚙️ Operational Flow Architecture
+
+The following sequence diagram details how the application works end-to-end—from the user's initial input, context loading via the Google Agent Memory Bank, real-time agent-evaluation loops with Google Search grounding, state persistence in Firestore, through the Human-in-the-Loop admin gateway and final real-time UI polling resolution.
 
 ```mermaid
-graph TD
-    subgraph Phase 1: Infrastructure & Environment Setup
-        A[Terraform: Firestore & IAM] --> B[agents-cli: Manifest & Evalset Config]
+sequenceDiagram
+    autonumber
+    actor Client as Client (User)
+    actor Admin as Administrator
+    participant FE as Frontend UI (Vite/Vanilla)
+    participant BE as FastAPI Backend (orchestrator.py)
+    participant DB as Google Cloud Firestore
+    participant AMB as Google Agent Memory Bank
+    participant PA as Primary Agent (Gemini 3.1 Pro)
+    participant GS as Google Search Tool
+    participant EA as Evaluator Judge (Gemini 3.5 Flash)
+
+    %% 1. Request & Context
+    Client->>FE: Inputs itinerary preferences
+    FE->>BE: POST /api/itinerary (Asynchronous Request)
+    BE->>AMB: Fetch short-term history & long-term user preferences
+    AMB-->>BE: Return profile context
+
+    %% 2. Orchestrated Generation Loop
+    rect rgb(30, 40, 50)
+        note right of BE: Evaluation Feedback Loop (max_retries = 3)
+        BE->>PA: Initiate planning with criteria & user preferences
+        loop Google Search Grounding
+            PA->>GS: Search flights, hotels, weather, & activities
+            GS-->>PA: Return real-time live travel data
+        end
+        PA-->>BE: Proposed Itinerary Draft
+        BE->>EA: Grade proposal for feasibility, budget & constraints
+        EA-->>BE: Score & structured feedback (Pass/Fail)
     end
-    subgraph Phase 2: Core Agent Logic
-        C[Primary Agent: Gemini 3.1 Pro] --> D[Google Search Grounding]
-    end
-    subgraph Phase 3: Evaluation Layer & Security
-        E[Gemini 3.5 Flash: Real-time Judge Loop] --> F[agents-cli eval: Offline Regression Tests]
-    end
-    subgraph Phase 4: State Management & Memory Gateway
-        G[Agent Memory Bank: Session & User Prefs] --> H[FastAPI Backend Orchestration]
-    end
-    subgraph Phase 5: UI & Cloud Deployment
-        I[Premium UI: Client & Admin Views] --> J[agents-cli deploy: Google Cloud Agent Runtime]
-    end
-    A --> C
-    B --> F
-    D --> E
-    F --> I
-    H --> I
-    I --> J
+
+    %% 3. State Persistence
+    BE->>DB: Save itinerary with 'pending_approval' status & evaluation score
+    BE-->>FE: Return task tracking ID
+    FE->>BE: Continuous Async Polling (Status: "pending_approval")
+
+    %% 4. Human-In-The-Loop Approval Flow
+    Admin->>FE: View Admin Dashboard
+    FE->>BE: GET /api/admin/pending
+    BE->>DB: Query 'pending_approval' records
+    DB-->>BE: Return pending proposals
+    BE-->>FE: Populate Admin Dashboard list
+    Admin->>FE: Click "Approve Itinerary"
+    FE->>BE: POST /api/admin/approve/{id}
+    BE->>DB: Update status to 'approved'
+    DB-->>BE: Confirmation
+
+    %% 5. Real-Time UI Resolution
+    FE->>BE: Poll /api/itinerary/{id}
+    BE->>DB: Get 'approved' itinerary
+    DB-->>BE: Return itinerary details
+    BE-->>FE: Status resolved to 'approved'
+    FE->>Client: Render premium itinerary carousel
 ```
 
 ---
 
-## 🛠️ Detailed Roadmap Phases
+## 🎯 Evaluation Criteria Fulfillment
 
-### Phase 1: Environment Setup & Infrastructure
-*   Configure Google Cloud Platform base APIs and services.
-*   **Infrastructure as Code (IaC)**: Deploy base database (Firestore) and IAM service accounts using Terraform.
-*   Initialize backend structure, Python dependencies, and `agents-cli-manifest.yaml` configuration.
+This project is built to fully address and satisfy the core evaluation parameters:
 
-### Phase 2: Core Agent Logic (Primary Agent)
-*   Build the primary planning agent using Gemini 3.1 Pro via the ADK.
-*   Integrate the built-in **Google Search tool** for real-time web grounding of flights, hotels, and tourist attractions.
-*   Implement a robust fallback schema (`fallback_requested` and `fallback_message`) in Pydantic to cleanly handle tool timeouts, budget limitations, or impossible criteria.
+### 1. 🛠️ Tool & Interface Design
+* **Premium Frontend SPA**: Built with Vanilla HTML/JS/CSS utilizing high-end aesthetic tokens (glassmorphism, curated HSL dark-theme palette, and subtle micro-animations) for a premium user experience.
+* **Latency-Aware Polling**: Features asynchronous state-tracking polling so the client sees real-time agent operations (e.g., `"Querying Google Search..."`, `"Evaluating constraints..."`) without interface freezing.
+* **Google Search Tool Grounding**: Uses the ADK's built-in Google Search tool to ground itinerary creation with live, real-time travel flight availability, hotel tariffs, and local attractions. It implements a robust Pydantic fallback mechanism to cleanly handle tool timeouts or budget conflicts.
 
-### Phase 3: Evaluation Layer (LLM-as-a-Judge) & Security
-*   **Real-time Evaluator Loop**: Implement a Gemini 3.5 Flash judge model that scores proposals for feasibility, budget compliance, and constraints, returning a feedback prompt to the primary agent up to a maximum number of retries (`max_retries`).
-*   **Offline/CI-CD Evaluation**: Set up `.evalset.json` datasets and use `agents-cli eval run` to quantitatively check overall agent accuracy and prevent prompt/logic regression before committing.
-*   **Security Guardrails**: Apply Vertex AI Safety Settings and strict backend input sanitization.
+### 2. 🧠 Context & Memory
+* **Google Agent Memory Bank**: Out-of-the-box native context management that avoids messy session bloat in the operational database.
+* **Short-Term Session History**: Natively records full message history to permit iterative conversational requests.
+* **Long-Term Preference Profiles**: Remembers and applies specific traveler profiles (e.g., airline alliance choices, dietary restrictions, accommodation tiers) across unique sessions for highly tailored itinerary plans.
 
-### Phase 4: State Management & Memory Gateway
-*   **Google Agent Memory Bank**: Connect the agent to Google's managed Memory Bank for both short-term active session chat histories and long-term user preferences (e.g., diet, airline brands, hotel class).
-*   **HITL Database Orchestration**: Store travel requests, pending admin approvals, and final approved itineraries in separate Firestore collections.
-*   **FastAPI API Gateway**: Build standard routes to accept user queries, trigger background agent workflow routines, fetch pending queues for admins, and write approvals.
+### 3. 🔄 Orchestration & Logic
+* **Generative-Evaluator Loop**: Coordinates Gemini 3.1 Pro (Primary Agent) and Gemini 3.5 Flash (LLM-as-a-judge Evaluator) in a self-correcting orchestrator loop that refines itineraries up to `max_retries` with direct grading feedback.
+* **Human-in-the-Loop (HITL) Gateway**: Implements a dedicated Admin Dashboard. All itineraries must receive manual authorization from an administrator before being marked `approved` in Firestore and visible to the client.
 
-### Phase 5: Frontend UI Development & Cloud Deployment
-*   **Client Planner View**: A modern, premium portal enabling users to enter preferences, track live agent steps via polling (e.g., `"Querying Google Search..."`, `"Grading proposals..."`), and view approved itineraries in an interactive carousel.
-*   **Admin Dashboard**: A secure administrative control screen to fetch pending proposals, review evaluator grades, and approve or reject submissions.
-*   **Vanilla CSS Styling**: Use premium dark mode styles, custom transitions, glassmorphism containers, and typography.
-*   **Cloud Deployment**: Package and deploy the agent container directly to Google Cloud Agent Runtime / Cloud Run via `agents-cli deploy`.
+### 4. 📊 Observability & Tracing
+* **Trace Analytics**: Produces rich trace JSON summaries capturing exact prompt context, search queries, tool outputs, and LLM-as-a-judge scores.
+* **Google Cloud Observability**: Natively hooks into GCP Cloud Trace, Cloud Logging, and BigQuery Agent Analytics to monitor execution timelines and debug latency bottlenecks.
+
+### 5. 🚀 Infrastructure & CI/CD
+* **Terraform IaC**: Infrastructure is fully declared and provisioned via Terraform, managing GCP Firestore, Cloud Storage buckets, and IAM Service Accounts with narrow-scope access controls.
+* **Containerized Deployment**: Utilizes an optimized, lightweight `Dockerfile` packaged and deployed directly to Google Cloud Agent Runtime on Vertex AI via `agents-cli deploy`.
+* **Offline Regression Evaluators**: Implements automated testing using `agents-cli eval` to evaluate accuracy and prevent regressions using a robust, custom `.evalset.json` test suite.
+
